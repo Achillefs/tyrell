@@ -12,5 +12,6 @@ target_compile_features(vp330_tests PRIVATE cxx_std_20)
 
 add_subdirectory(golden)
 add_subdirectory(unit)
+add_subdirectory(characterization)
 
 catch_discover_tests(vp330_tests)
