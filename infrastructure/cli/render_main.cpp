@@ -2,7 +2,6 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 #include <string>
 #include <vector>
 
@@ -14,6 +13,27 @@ struct Args {
     double duration_seconds = 1.0;
     int sample_rate = 48000;
 };
+
+bool parse_double(const char* str, double& out, const char* name) {
+    char* end = nullptr;
+    out = std::strtod(str, &end);
+    if (end == str || *end != '\0') {
+        std::fprintf(stderr, "invalid numeric value for %s: %s\n", name, str);
+        return false;
+    }
+    return true;
+}
+
+bool parse_int(const char* str, int& out, const char* name) {
+    char* end = nullptr;
+    const long v = std::strtol(str, &end, 10);
+    if (end == str || *end != '\0' || v < 0 || v > 1'000'000'000) {
+        std::fprintf(stderr, "invalid integer value for %s: %s\n", name, str);
+        return false;
+    }
+    out = static_cast<int>(v);
+    return true;
+}
 
 bool parse_args(int argc, char** argv, Args& out) {
     for (int i = 1; i < argc; ++i) {
@@ -32,11 +52,13 @@ bool parse_args(int argc, char** argv, Args& out) {
             if (auto v = next("--output")) out.output_wav = v;
             else return false;
         } else if (a == "--duration") {
-            if (auto v = next("--duration")) out.duration_seconds = std::atof(v);
-            else return false;
+            if (auto v = next("--duration")) {
+                if (!parse_double(v, out.duration_seconds, "--duration")) return false;
+            } else return false;
         } else if (a == "--sample-rate") {
-            if (auto v = next("--sample-rate")) out.sample_rate = std::atoi(v);
-            else return false;
+            if (auto v = next("--sample-rate")) {
+                if (!parse_int(v, out.sample_rate, "--sample-rate")) return false;
+            } else return false;
         } else {
             std::fprintf(stderr, "unknown arg: %s\n", a.c_str());
             return false;
