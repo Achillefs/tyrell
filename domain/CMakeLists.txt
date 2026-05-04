@@ -1,0 +1,9 @@
+add_library(vp330_domain STATIC
+    src/stub.cpp
+)
+
+target_include_directories(vp330_domain
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_compile_features(vp330_domain PUBLIC cxx_std_20)
