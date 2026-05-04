@@ -25,6 +25,8 @@ void TopOctaveDivider::render_pitch_class(int pitch_class, float* out, std::size
   uint64_t& n = sample_count_[pitch_class];
   for (std::size_t i = 0; i < frames; ++i) {
     ++n;
+    // fmod on the integer sample count rather than += inc — eliminates per-period
+    // FP drift that otherwise misses one zero-crossing per second at audio rate.
     const double p = std::fmod(static_cast<double>(n) * freq * inv_sr, 1.0);
     out[i] = (p < 0.5 ? 1.0f : -1.0f);
   }

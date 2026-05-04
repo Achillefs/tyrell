@@ -9,12 +9,13 @@
 using vp330::Hertz;
 using vp330::TopOctaveDivider;
 
-TEST_CASE("TopOctaveDivider: pitch-class frequency = master / (2 * ratio)", "[tod]") {
+TEST_CASE("TopOctaveDivider: pitch-class frequency matches divider math for every index", "[tod]") {
   std::array<int, 12> ratios{250, 200, 150, 125, 100, 80, 60, 50, 40, 30, 25, 20};
   TopOctaveDivider tod{Hertz{1.0e6}, ratios, /*sample_rate=*/48000};
-
-  REQUIRE(tod.pitch_class_frequency(0).value() == Catch::Approx(2000.0).margin(1e-9));
-  REQUIRE(tod.pitch_class_frequency(11).value() == Catch::Approx(25000.0).margin(1e-9));
+  for (int p = 0; p < 12; ++p) {
+    const double expected = 1.0e6 / (2.0 * static_cast<double>(ratios[p]));
+    REQUIRE(tod.pitch_class_frequency(p).value() == Catch::Approx(expected).margin(1e-9));
+  }
 }
 
 TEST_CASE("TopOctaveDivider: produces 50%-duty squares at the divided frequencies", "[tod]") {
@@ -31,6 +32,7 @@ TEST_CASE("TopOctaveDivider: produces 50%-duty squares at the divided frequencie
     const bool curr_pos = buf[i] >= 0.0f;
     if (prev_pos != curr_pos) ++crossings;
   }
+  // 12000 / (2*50) = 120 Hz; 120 cycles × 2 sign-changes/cycle × 1 s = 240.
   REQUIRE(crossings == 240);
 }
 
