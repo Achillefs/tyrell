@@ -31,6 +31,24 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
+FetchContent_Declare(
+    rapidcheck
+    GIT_REPOSITORY https://github.com/emil-e/rapidcheck.git
+    GIT_TAG b2d9ed2dddefc4b84318d664b4f221eb792d89c7
+)
+# Note: RC_ENABLE_CATCH causes rapidcheck to build its bundled Catch2 (in ext/)
+# which conflicts with our external Catch2. Instead, we build rapidcheck without
+# it and manually create the rapidcheck_catch target (matching extras/catch).
+FetchContent_MakeAvailable(rapidcheck)
+
+# Manually create rapidcheck_catch INTERFACE library.
+# Mirrors extras/catch/CMakeLists.txt (integration layer, not bundled Catch2).
+add_library(rapidcheck_catch INTERFACE)
+target_link_libraries(rapidcheck_catch INTERFACE rapidcheck)
+target_include_directories(rapidcheck_catch INTERFACE
+    $<BUILD_INTERFACE:${rapidcheck_SOURCE_DIR}/extras/catch/include>
+)
+
 enable_testing()
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(Catch)
