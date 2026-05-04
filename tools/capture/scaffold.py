@@ -26,7 +26,7 @@ def manifest_template(session_date: str, session_name: str) -> dict:
             "sample_rate": 48000,
             "bit_depth": 24,
             "channels": 2,
-            "duration_seconds": 0.0,
+            "duration_seconds": None,
         },
         "instrument_settings": {
             "section": "choir",
