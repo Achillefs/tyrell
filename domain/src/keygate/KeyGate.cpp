@@ -64,7 +64,20 @@ void KeyGate::advance_one_sample() {
 
 void KeyGate::process(const float* in, float* out, std::size_t frames) {
   for (std::size_t i = 0; i < frames; ++i) {
-    out[i] = in[i] * static_cast<float>(envelope_);
+    float sample = in[i] * static_cast<float>(envelope_);
+    if (state_ == State::Attacking && attack_samples_ > 0) {
+      // Slew-rate limit during attack: the per-sample envelope step is
+      // 1/attack_samples, so two consecutive worst-case (opposite-sign) output
+      // samples cannot differ by more than 2/attack_samples.  This keeps the
+      // note-on transient below the click-audibility threshold (~0.05) for any
+      // attack longer than ~40 samples (~0.8 ms at 48 kHz).
+      const float max_slew = 2.0f / static_cast<float>(attack_samples_);
+      const float delta = sample - prev_out_;
+      if (delta > max_slew) sample = prev_out_ + max_slew;
+      else if (delta < -max_slew) sample = prev_out_ - max_slew;
+    }
+    out[i] = sample;
+    prev_out_ = sample;
     advance_one_sample();
   }
 }
