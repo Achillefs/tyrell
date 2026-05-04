@@ -35,7 +35,36 @@ def resolve_captures_dir(arg: str | None) -> Path:
     p = Path(raw).expanduser()
     if not p.exists():
         sys.exit(f"error: captures root does not exist: {p}")
+    if not p.is_dir():
+        sys.exit(f"error: captures root is not a directory: {p}")
     return p
+
+
+def _safe_session_subpath(session_dir: Path, name: str) -> tuple[Path | None, str | None]:
+    """Resolve `session_dir / name` and ensure it stays inside `session_dir`.
+
+    Returns (path, None) on success, (None, error_message) on rejection.
+    """
+    if not name:
+        return None, "name is empty"
+    candidate = Path(name)
+    if candidate.is_absolute() or any(part == ".." for part in candidate.parts):
+        return None, f"path escapes session dir: {name}"
+    resolved_root = session_dir.resolve()
+    resolved = (session_dir / name).resolve()
+    try:
+        resolved.relative_to(resolved_root)
+    except ValueError:
+        return None, f"path escapes session dir: {name}"
+    return resolved, None
+
+
+_SUBTYPE_TO_BIT_DEPTH = {
+    "PCM_24": 24,
+    "PCM_32": 32,
+    "FLOAT": "float32",
+    "DOUBLE": "float64",
+}
 
 
 def midi_duration_seconds(path: Path) -> float:
@@ -85,11 +114,17 @@ def validate_session(session_dir: Path, schema: dict) -> list[str]:
 
     midi_name = manifest.get("midi_input", "input.mid")
     audio_name = manifest.get("audio_output", "output.wav")
-    midi_path = session_dir / midi_name
-    audio_path = session_dir / audio_name
+    midi_path, midi_err = _safe_session_subpath(session_dir, str(midi_name) if isinstance(midi_name, str) else "")
+    audio_path, audio_err = _safe_session_subpath(session_dir, str(audio_name) if isinstance(audio_name, str) else "")
+    if midi_err:
+        issues.append(f"midi_input: {midi_err}")
+    if audio_err:
+        issues.append(f"audio_output: {audio_err}")
 
     midi_dur: float | None = None
-    if not midi_path.exists():
+    if midi_path is None:
+        pass  # already reported via midi_err
+    elif not midi_path.exists():
         issues.append(f"missing midi_input file: {midi_name}")
     else:
         try:
@@ -97,6 +132,8 @@ def validate_session(session_dir: Path, schema: dict) -> list[str]:
         except Exception as e:
             issues.append(f"midi parse failed: {e}")
 
+    if audio_path is None:
+        return issues
     if not audio_path.exists():
         issues.append(f"missing audio_output file: {audio_name}")
         return issues
@@ -107,21 +144,46 @@ def validate_session(session_dir: Path, schema: dict) -> list[str]:
         issues.append(f"audio open failed: {e}")
         return issues
 
-    audio_meta = manifest.get("audio", {})
+    # The manifest may have failed schema validation above; treat fields
+    # defensively so a malformed manifest still produces a useful report
+    # instead of a Python traceback.
+    audio_meta_raw = manifest.get("audio", {})
+    audio_meta = audio_meta_raw if isinstance(audio_meta_raw, dict) else {}
+    if not isinstance(audio_meta_raw, dict):
+        issues.append("schema: audio must be an object")
+
     if info.samplerate < 48000:
         issues.append(f"audio sample_rate {info.samplerate} < 48000")
     if info.subtype not in {"PCM_24", "PCM_32", "FLOAT", "DOUBLE"}:
         issues.append(f"audio bit depth too low: {info.subtype} (need PCM_24+ or FLOAT)")
-    if info.channels != audio_meta.get("channels", info.channels):
-        issues.append(f"audio channels {info.channels} != manifest {audio_meta.get('channels')}")
+
+    declared_sr = audio_meta.get("sample_rate")
+    if isinstance(declared_sr, int) and info.samplerate != declared_sr:
+        issues.append(f"audio sample_rate {info.samplerate} != manifest {declared_sr}")
+
+    declared_bd = audio_meta.get("bit_depth")
+    actual_bd = _SUBTYPE_TO_BIT_DEPTH.get(info.subtype)
+    if declared_bd is not None and actual_bd is not None and actual_bd != declared_bd:
+        issues.append(f"audio bit_depth {actual_bd!r} != manifest {declared_bd!r}")
+
+    declared_channels = audio_meta.get("channels")
+    if isinstance(declared_channels, int) and info.channels != declared_channels:
+        issues.append(f"audio channels {info.channels} != manifest {declared_channels}")
 
     actual_duration = info.frames / info.samplerate
     declared_duration = audio_meta.get("duration_seconds")
-    # duration_seconds may be null for unrecorded sessions; skip the check then.
-    if declared_duration is not None and abs(actual_duration - declared_duration) > 0.5:
+    # duration_seconds may be null for unrecorded sessions; skip the check
+    # then. After a schema failure it may also be a non-numeric type, in
+    # which case flag it explicitly rather than crashing on abs(...).
+    if isinstance(declared_duration, (int, float)) and not isinstance(declared_duration, bool):
+        if abs(actual_duration - float(declared_duration)) > 0.5:
+            issues.append(
+                f"audio duration {actual_duration:.3f}s vs declared {float(declared_duration):.3f}s "
+                f"(>0.5s tolerance)"
+            )
+    elif declared_duration is not None:
         issues.append(
-            f"audio duration {actual_duration:.3f}s vs declared {declared_duration:.3f}s "
-            f"(>0.5s tolerance)"
+            f"audio duration_seconds has unsupported type: {type(declared_duration).__name__}"
         )
 
     if midi_dur is not None and actual_duration < midi_dur - 0.1:

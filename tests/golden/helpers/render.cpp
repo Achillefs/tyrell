@@ -1,9 +1,16 @@
 #include "render.h"
 
-#include <cstdlib>
+#include <cerrno>
+#include <cstring>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+#include <spawn.h>
+#include <sys/wait.h>
+
+extern char** environ;
 
 namespace vp330::test {
 
@@ -17,24 +24,47 @@ namespace {
 #error "GOLDEN_FIXTURES_DIR must be defined by CMake"
 #endif
 
-/**
- * @brief Construct a deterministic temporary output path for a golden fixture.
- *
- * Ensures a directory named "vp330_golden" exists under the system temporary
- * directory and returns the path formed by appending ".out.wav" to
- * fixture_filename inside that directory.
- *
- * @param fixture_filename Filename of the golden fixture (base name or relative
- *        filename) used to derive the output WAV name.
- * @return std::string Full path to the temporary output WAV
- * (system-temp/vp330_golden/<fixture_filename>.out.wav).
- */
+// Deterministic path is fine while there's one L3 test; once Phase 1+ adds
+// more, append a unique suffix (test name hash, PID) to support `ctest -j`.
 std::string make_temp_path(const std::string& fixture_filename) {
   auto dir = std::filesystem::temp_directory_path() / "vp330_golden";
   std::filesystem::create_directories(dir);
-  // Note: deterministic path is fine while there's one L3 test; when Phase 1+
-  // adds more, append a unique suffix (test name hash, PID) to support `ctest -j`.
   return (dir / (fixture_filename + ".out.wav")).string();
+}
+
+// Run vp330_render via posix_spawn (no shell, no quoting/injection surface).
+// Throws on spawn failure or non-zero exit.
+void exec_render(const std::vector<std::string>& argv) {
+  std::vector<char*> raw;
+  raw.reserve(argv.size() + 1);
+  for (const auto& s : argv)
+    raw.push_back(const_cast<char*>(s.c_str()));
+  raw.push_back(nullptr);
+
+  pid_t pid = 0;
+  const int spawn_rc = posix_spawnp(&pid, raw[0], nullptr, nullptr, raw.data(), environ);
+  if (spawn_rc != 0) {
+    throw std::runtime_error(std::string("render_fixture: posix_spawnp failed: ") +
+                             std::strerror(spawn_rc));
+  }
+
+  int status = 0;
+  while (true) {
+    const pid_t got = waitpid(pid, &status, 0);
+    if (got == pid) break;
+    if (got == -1 && errno == EINTR) continue;
+    throw std::runtime_error(std::string("render_fixture: waitpid failed: ") +
+                             std::strerror(errno));
+  }
+
+  if (WIFSIGNALED(status)) {
+    throw std::runtime_error("render_fixture: vp330_render killed by signal " +
+                             std::to_string(WTERMSIG(status)));
+  }
+  if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+    throw std::runtime_error("render_fixture: vp330_render exited " +
+                             std::to_string(WIFEXITED(status) ? WEXITSTATUS(status) : -1));
+  }
 }
 
 } // namespace
@@ -43,15 +73,18 @@ Wav render_fixture(const std::string& fixture_filename, int sample_rate, double 
   const std::string fixture_path = std::string(GOLDEN_FIXTURES_DIR) + "/" + fixture_filename;
   const std::string out_path = make_temp_path(fixture_filename);
 
-  const std::string command = std::string(VP330_RENDER_BINARY) + " --input " + fixture_path +
-                              " --output " + out_path + " --duration " +
-                              std::to_string(duration_seconds) + " --sample-rate " +
-                              std::to_string(sample_rate);
-
-  const int rc = std::system(command.c_str());
-  if (rc != 0) {
-    throw std::runtime_error("render_fixture: vp330_render exited " + std::to_string(rc));
-  }
+  const std::vector<std::string> argv = {
+      VP330_RENDER_BINARY,
+      "--input",
+      fixture_path,
+      "--output",
+      out_path,
+      "--duration",
+      std::to_string(duration_seconds),
+      "--sample-rate",
+      std::to_string(sample_rate),
+  };
+  exec_render(argv);
 
   return load_wav(out_path);
 }

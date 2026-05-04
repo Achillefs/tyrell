@@ -48,8 +48,12 @@ def list_and_pick_midi_out(preselect: str | None) -> str:
     print("MIDI output ports:")
     for i, n in enumerate(names):
         print(f"  [{i}] {n}")
-    idx = int(input("Pick MIDI output index: ").strip())
-    return names[idx]
+    raw = input("Pick MIDI output index: ").strip()
+    try:
+        idx = int(raw)
+        return names[idx]
+    except (ValueError, IndexError):
+        sys.exit(f"error: invalid MIDI output index {raw!r} (expected 0..{len(names) - 1})")
 
 
 def list_and_pick_audio_in(preselect: str | None) -> int:
@@ -82,7 +86,15 @@ def list_and_pick_audio_in(preselect: str | None) -> int:
     print("Audio input devices:")
     for i, d in inputs:
         print(f"  [{i}] {d['name']} (max in: {d['max_input_channels']})")
-    return int(input("Pick audio input index: ").strip())
+    raw = input("Pick audio input index: ").strip()
+    valid_indices = {i for i, _ in inputs}
+    try:
+        idx = int(raw)
+    except ValueError:
+        sys.exit(f"error: invalid audio input index {raw!r}")
+    if idx not in valid_indices:
+        sys.exit(f"error: audio input index {idx} is not in {sorted(valid_indices)}")
+    return idx
 
 
 class RingRecorder:
@@ -248,7 +260,7 @@ def main() -> int:
     parser.add_argument("--midi-out", default=None)
     parser.add_argument("--audio-in", default=None)
     parser.add_argument("--sample-rate", type=int, default=48000)
-    parser.add_argument("--channels", type=int, default=2)
+    parser.add_argument("--channels", type=int, default=2, choices=[1, 2])
     parser.add_argument("--bit-depth", type=int, default=24, choices=[24, 32])
     parser.add_argument("--tail-min", type=float, default=5.0)
     parser.add_argument("--silence-thresh-db", type=float, default=-50.0)
@@ -256,6 +268,20 @@ def main() -> int:
     parser.add_argument("--max-tail", type=float, default=30.0)
     parser.add_argument("--no-editor", action="store_true")
     args = parser.parse_args()
+
+    # Enforce schema-compatible bounds before we record so the resulting
+    # session can't be rejected later by validate.py for reasons we could
+    # have caught here.
+    if args.sample_rate < 48000:
+        parser.error("--sample-rate must be >= 48000 (schema minimum)")
+    if args.tail_min < 0:
+        parser.error("--tail-min must be >= 0")
+    if args.silence_window <= 0:
+        parser.error("--silence-window must be > 0")
+    if args.max_tail <= 0:
+        parser.error("--max-tail must be > 0")
+    if args.max_tail < args.tail_min:
+        parser.error("--max-tail must be >= --tail-min")
 
     if not SLUG_RE.match(args.name):
         sys.exit(f"error: --name must match {SLUG_RE.pattern}")

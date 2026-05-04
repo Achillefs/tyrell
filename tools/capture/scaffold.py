@@ -85,6 +85,8 @@ def resolve_captures_dir() -> Path:
     p = Path(raw).expanduser()
     if not p.exists():
         sys.exit(f"error: $VP330_CAPTURES_DIR does not exist: {p}")
+    if not p.is_dir():
+        sys.exit(f"error: $VP330_CAPTURES_DIR is not a directory: {p}")
     return p
 
 

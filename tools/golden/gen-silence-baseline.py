@@ -18,13 +18,26 @@ def write_wav_24bit_silence(path: Path, sample_rate: int, duration_seconds: floa
     Returns:
         total_bytes (int): Total number of bytes written to the file, including the WAV header.
     """
+    if sample_rate <= 0:
+        raise ValueError(f"sample_rate must be > 0 (got {sample_rate})")
+    if duration_seconds <= 0:
+        raise ValueError(f"duration_seconds must be > 0 (got {duration_seconds})")
+
     channels = 2
     bits_per_sample = 24
     bytes_per_sample = bits_per_sample // 8
-    num_frames = int(round(sample_rate * duration_seconds))
+    num_frames = round(sample_rate * duration_seconds)
     block_align = channels * bytes_per_sample
     byte_rate = sample_rate * block_align
     data_size = num_frames * block_align
+
+    # RIFF/WAV chunk sizes are unsigned 32-bit; fail fast with a clear
+    # message if the requested duration overflows the format's limit.
+    if data_size > 0xFFFFFFFF or 36 + data_size > 0xFFFFFFFF:
+        raise ValueError(
+            f"WAV data chunk too large for RIFF (data_size={data_size}); "
+            f"reduce --duration or --sample-rate"
+        )
 
     header = (
         b"RIFF"
@@ -63,6 +76,10 @@ def main() -> int:
     parser.add_argument("--sample-rate", type=int, default=48000)
     parser.add_argument("--duration", type=float, default=1.0)
     args = parser.parse_args()
+    if args.sample_rate <= 0:
+        parser.error("--sample-rate must be > 0")
+    if args.duration <= 0:
+        parser.error("--duration must be > 0")
 
     total = write_wav_24bit_silence(args.output, args.sample_rate, args.duration)
     print(f"wrote {args.output} ({total} bytes)")

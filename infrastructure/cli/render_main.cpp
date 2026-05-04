@@ -1,5 +1,6 @@
 #include <sndfile.h>
 
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -29,8 +30,9 @@ struct Args {
 bool parse_double(const char* str, double& out, const char* name) {
   char* end = nullptr;
   out = std::strtod(str, &end);
-  if (end == str || *end != '\0') {
-    std::fprintf(stderr, "invalid numeric value for %s: %s\n", name, str);
+  if (end == str || *end != '\0' || !std::isfinite(out) || out <= 0.0) {
+    std::fprintf(stderr, "invalid numeric value for %s: %s (must be a finite positive number)\n",
+                 name, str);
     return false;
   }
   return true;
@@ -53,8 +55,9 @@ bool parse_double(const char* str, double& out, const char* name) {
 bool parse_int(const char* str, int& out, const char* name) {
   char* end = nullptr;
   const long v = std::strtol(str, &end, 10);
-  if (end == str || *end != '\0' || v < 0 || v > 1'000'000'000) {
-    std::fprintf(stderr, "invalid integer value for %s: %s\n", name, str);
+  if (end == str || *end != '\0' || v <= 0 || v > 1'000'000'000) {
+    std::fprintf(stderr, "invalid integer value for %s: %s (must be a positive integer ≤ 1e9)\n",
+                 name, str);
     return false;
   }
   out = static_cast<int>(v);
