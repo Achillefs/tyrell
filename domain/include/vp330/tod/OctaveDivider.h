@@ -22,6 +22,7 @@ private:
   Hertz input_frequency_;
   int sample_rate_;
   // Per-octave sample counter; phase is derived via fmod to avoid accumulation error.
+  // One independent counter per slot — interleaved render() calls must not alias.
   std::array<uint64_t, kMaxOctavesDown + 1> sample_count_{};
 };
 
