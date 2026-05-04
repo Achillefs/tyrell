@@ -380,13 +380,13 @@ Each phase has a definition-of-done. A phase is not complete until every item is
 
 Deliverables:
 
-- [ ] Repo created with the Section 5 skeleton.
-- [ ] CMake building an empty `vp330_domain`, an empty `vp330_render`, an empty `VP330` plugin (just generates silence).
-- [ ] CI workflows green on a no-op commit.
-- [ ] `.clang-format`, `.clang-tidy`, `.gitattributes` for LFS in place.
-- [ ] `GLOSSARY.md`, `README.md`, `CONTRIBUTING.md` written.
-- [ ] First reference capture session committed to the captures repo (Section 8 list, items 1–4 minimum).
-- [ ] One walking-skeleton golden test passing: render a 1-second silence, compare to a 1-second silence baseline. Proves the test plumbing works.
+- [x] Repo created with the Section 5 skeleton.
+- [x] CMake building an empty `vp330_domain`, an empty `vp330_render`, an empty `VP330` plugin (just generates silence).
+- [x] CI workflows green on a no-op commit.
+- [x] `.clang-format`, `.clang-tidy`, `.gitattributes` for LFS in place.
+- [x] `GLOSSARY.md`, `README.md`, `CONTRIBUTING.md` written.
+- [ ] First reference capture session committed to the captures repo (Section 8 list, items 1–4 minimum). _Pending: tooling shipped at `tools/capture/` (scaffold + driver + validate) but the recording itself is a hardware task on the author's MkII; the session lives in the private companion repo at `$VP330_CAPTURES_DIR`._
+- [x] One walking-skeleton golden test passing: render a 1-second silence, compare to a 1-second silence baseline. Proves the test plumbing works.
 
 ### Phase 1 — Skeleton Engine
 
