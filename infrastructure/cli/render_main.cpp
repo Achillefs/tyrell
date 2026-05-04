@@ -14,6 +14,18 @@ struct Args {
   int sample_rate = 48000;
 };
 
+/**
+ * @brief Parse a NUL-terminated string as a double and ensure the whole string is consumed.
+ *
+ * Converts `str` to a `double` and stores the value in `out` when the entire
+ * input represents a valid floating-point number. On failure, an error
+ * message referencing `name` is printed to stderr.
+ *
+ * @param str Input NUL-terminated string to parse.
+ * @param out Output location for the parsed double (assigned only on success).
+ * @param name Name used in the error message when parsing fails.
+ * @return true if parsing succeeded and the entire string was consumed, false otherwise.
+ */
 bool parse_double(const char* str, double& out, const char* name) {
   char* end = nullptr;
   out = std::strtod(str, &end);
@@ -24,6 +36,20 @@ bool parse_double(const char* str, double& out, const char* name) {
   return true;
 }
 
+/**
+ * @brief Parse a base-10 integer from a C string and validate its range.
+ *
+ * Parses the entire NUL-terminated string `str` as a base-10 integer, verifies
+ * the string was fully consumed and that the value is between 0 and 1,000,000,000
+ * inclusive, and stores the result in `out` on success.
+ *
+ * @param str NUL-terminated input string containing the integer to parse.
+ * @param out Reference to the destination integer written on success.
+ * @param name Human-readable parameter name used in the error message on failure.
+ * @return true if parsing succeeded and `out` was assigned, false otherwise.
+ *
+ * On failure a diagnostic is printed to stderr.
+ */
 bool parse_int(const char* str, int& out, const char* name) {
   char* end = nullptr;
   const long v = std::strtol(str, &end, 10);
@@ -35,6 +61,24 @@ bool parse_int(const char* str, int& out, const char* name) {
   return true;
 }
 
+/**
+ * @brief Parses command-line arguments and populates an Args structure.
+ *
+ * Recognized options:
+ * - --input <path>        : optional, sets Args::input_midi
+ * - --output <path>       : required, sets Args::output_wav
+ * - --duration <seconds>  : optional, parsed into Args::duration_seconds
+ * - --sample-rate <hz>    : optional, parsed into Args::sample_rate
+ *
+ * On parse errors, missing values, unknown options, or invalid numeric
+ * conversions this function prints an error message to stderr and returns
+ * `false`.
+ *
+ * @param argc Number of command-line arguments.
+ * @param argv Command-line argument vector.
+ * @param out Destination Args object to populate with parsed values.
+ * @return `true` if parsing succeeded and required options are present, `false` otherwise.
+ */
 bool parse_args(int argc, char** argv, Args& out) {
   for (int i = 1; i < argc; ++i) {
     std::string a = argv[i];
@@ -77,7 +121,21 @@ bool parse_args(int argc, char** argv, Args& out) {
   return true;
 }
 
-} // namespace
+} /**
+ * @brief Command-line entry point that renders audio to a WAV file.
+ *
+ * Parses CLI options, opens the specified output WAV file, writes silent audio for
+ * the configured duration and sample rate, and exits with a status indicating success
+ * or the type of failure.
+ *
+ * @param argc Argument count from the process invocation.
+ * @param argv Argument vector from the process invocation.
+ * @return int Exit status: `0` on success, `2` for argument/usage errors, `1` for file
+ * open or write failures.
+ *
+ * @note The current implementation writes silence as a placeholder; future versions
+ * will generate audio from the synthesis engine.
+ */
 
 int main(int argc, char** argv) {
   Args args;

@@ -7,6 +7,17 @@ from pathlib import Path
 
 
 def write_wav_24bit_silence(path: Path, sample_rate: int, duration_seconds: float) -> int:
+    """
+    Create a 24-bit stereo WAV file of silence at the given sample rate and duration.
+    
+    Parameters:
+        path (Path): Output file path; parent directories will be created if necessary.
+        sample_rate (int): Sample rate in Hertz.
+        duration_seconds (float): Duration of the silence in seconds.
+    
+    Returns:
+        total_bytes (int): Total number of bytes written to the file, including the WAV header.
+    """
     channels = 2
     bits_per_sample = 24
     bytes_per_sample = bits_per_sample // 8
@@ -39,6 +50,14 @@ def write_wav_24bit_silence(path: Path, sample_rate: int, duration_seconds: floa
 
 
 def main() -> int:
+    """
+    Parse command-line arguments and generate a 24-bit stereo WAV file of silence, then print the total bytes written.
+    
+    Accepts these CLI options: `--output` (Path, required), `--sample-rate` (int, default 48000), and `--duration` (float, default 1.0). The function writes the file and reports the number of bytes written.
+    
+    Returns:
+        int: Exit status code (0 indicates success).
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--sample-rate", type=int, default=48000)

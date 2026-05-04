@@ -11,6 +11,16 @@ from pathlib import Path
 
 
 def variable_length_quantity(value: int) -> bytes:
+    """
+    Encode a non-negative integer as a MIDI Variable Length Quantity (VLQ).
+    
+    Parameters:
+        value (int): The non-negative integer to encode as a VLQ (0 encodes to a single 0x00 byte).
+    
+    Returns:
+        bytes: The VLQ byte sequence where each byte contains 7 bits of the value and the high bit
+        (0x80) set on all bytes except the final one.
+    """
     if value == 0:
         return b"\x00"
     parts = []
@@ -22,6 +32,14 @@ def variable_length_quantity(value: int) -> bytes:
 
 
 def main() -> int:
+    """
+    Create a 1-second silent MIDI fixture file at the CLI-specified output path.
+    
+    Writes a minimal format-0 MIDI file (PPQN=480) containing a tempo meta-event (120 BPM) and an end-of-track meta-event. The output directory is created if needed; the function writes the MIDI bytes to the provided --output path and prints a message with the path and total byte count.
+    
+    Returns:
+        int: `0` on success.
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()

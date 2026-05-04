@@ -26,6 +26,17 @@ from scaffold import manifest_template, resolve_captures_dir, SLUG_RE  # noqa: E
 
 
 def list_and_pick_midi_out(preselect: str | None) -> str:
+    """
+    Select a MIDI output port name from the available system MIDI outputs.
+    
+    If `preselect` is provided, returns the first port whose name contains that substring (case-insensitive); if no match is found the function exits the process with an error. If `preselect` is not provided, prints the available ports with indices and prompts the user to enter an index, then returns the corresponding port name. If no output ports are available the function exits the process with an error.
+    
+    Parameters:
+        preselect (str | None): Optional substring used to automatically choose a port by name.
+    
+    Returns:
+        port_name (str): The selected MIDI output port name.
+    """
     names = mido.get_output_names()
     if not names:
         sys.exit("error: no MIDI output ports available.")
@@ -42,6 +53,23 @@ def list_and_pick_midi_out(preselect: str | None) -> str:
 
 
 def list_and_pick_audio_in(preselect: str | None) -> int:
+    """
+    Select an audio input device index, optionally chosen by substring match.
+    
+    When `preselect` is provided, returns the index of the first input device whose name contains
+    `preselect` case-insensitively. Without `preselect`, prints available input devices with their
+    indices and prompts the user to enter an index.
+    
+    Parameters:
+    	preselect (str | None): Optional case-insensitive substring to auto-select a device by name.
+    
+    Returns:
+    	int: The selected audio input device index.
+    
+    Notes:
+    	Exits the process with an error message if no input devices are available or if `preselect`
+    	does not match any device.
+    """
     devices = sd.query_devices()
     inputs = [(i, d) for i, d in enumerate(devices) if d["max_input_channels"] > 0]
     if not inputs:
@@ -61,6 +89,18 @@ class RingRecorder:
     """Records to a list of np arrays via the sounddevice callback. Tracks live RMS."""
 
     def __init__(self, sample_rate: int, channels: int):
+        """
+        Initialize a RingRecorder that accumulates incoming audio blocks and maintains a running RMS level in dB.
+        
+        Parameters:
+            sample_rate (int): Sampling rate in Hz used for the input stream.
+            channels (int): Number of audio channels per frame.
+        
+        Initial state:
+            - _chunks: empty list to store copied input blocks.
+            - _lock: threading.Lock protecting _chunks.
+            - _latest_rms_db: initial estimated RMS level set to -120.0 dB.
+        """
         self.sample_rate = sample_rate
         self.channels = channels
         self._chunks: list[np.ndarray] = []
@@ -68,6 +108,20 @@ class RingRecorder:
         self._latest_rms_db = -120.0
 
     def _callback(self, indata, frames, time_info, status):  # noqa: ANN001
+        """
+        SoundDevice input-stream callback: records the incoming block, updates the running RMS level in dB, and reports any stream status.
+        
+        Parameters:
+            indata (numpy.ndarray): Incoming audio block shaped (frames, channels), dtype float32 or similar; this buffer is copied before storage.
+            frames (int): Number of frames in `indata`.
+            time_info (dict): Timing information provided by sounddevice (e.g., input/output timestamps).
+            status (sounddevice.CallbackFlags): Stream status flags; if non-empty they are printed to stderr.
+        
+        Side effects:
+            - Appends a copy of `indata` to the recorder's internal chunk list (thread-safe).
+            - Updates the recorder's `_latest_rms_db` with the block's RMS converted to decibels.
+            - Prints `status` to stderr when present.
+        """
         if status:
             print(f"[audio status] {status}", file=sys.stderr)
         block = indata.copy()
@@ -77,6 +131,15 @@ class RingRecorder:
         self._latest_rms_db = 20.0 * np.log10(rms + 1e-30)
 
     def stream(self, device: int):
+        """
+        Create and return a configured sounddevice InputStream bound to this recorder.
+        
+        Parameters:
+            device (int): Index or identifier of the audio input device to open.
+        
+        Returns:
+            sd.InputStream: An InputStream configured with this recorder's sample rate, channel count, float32 dtype, and the internal callback that captures incoming audio.
+        """
         return sd.InputStream(
             device=device,
             channels=self.channels,
@@ -87,9 +150,23 @@ class RingRecorder:
 
     @property
     def rms_db(self) -> float:
+        """
+        Current estimated RMS level expressed in decibels.
+        
+        Returns:
+            float: Most recently computed RMS level in dB (higher = louder). Initialized to -120.0 before any audio has been processed.
+        """
         return self._latest_rms_db
 
     def collect(self) -> np.ndarray:
+        """
+        Concatenate and return all captured audio chunks as a single NumPy array.
+        
+        If no audio has been captured yet, returns a zero-length array with shape (0, channels) and dtype float32.
+        
+        Returns:
+            np.ndarray: Array of shape (N, channels) containing the recorded samples as float32, where N is the total number of frames (0 if no chunks).
+        """
         with self._lock:
             if not self._chunks:
                 return np.zeros((0, self.channels), dtype=np.float32)
@@ -97,6 +174,13 @@ class RingRecorder:
 
 
 def play_midi(port_name: str, midi_path: Path) -> None:
+    """
+    Send all messages from a MIDI file to the specified MIDI output port, preserving the file's timing.
+    
+    Parameters:
+        port_name (str): Name of the MIDI output port to open.
+        midi_path (Path): Path to the MIDI file whose messages will be played.
+    """
     midi = mido.MidiFile(str(midi_path))
     with mido.open_output(port_name) as port:
         for msg in midi.play():
@@ -105,7 +189,17 @@ def play_midi(port_name: str, midi_path: Path) -> None:
 
 def wait_for_silence(rec: RingRecorder, *, tail_min: float, thresh_db: float,
                      window_s: float, max_tail: float) -> None:
-    start = time.monotonic()
+    """
+                     Wait for the recorder's RMS level to remain below a threshold for a continuous window, with a required minimum tail and a hard maximum wait.
+                     
+                     Parameters:
+                         rec (RingRecorder): Recorder providing the `rms_db` property to poll.
+                         tail_min (float): Mandatory minimum tail time in seconds to wait before checking for silence.
+                         thresh_db (float): Silence threshold in decibels; considered silent when `rec.rms_db < thresh_db`.
+                         window_s (float): Required continuous time in seconds that the level must remain below `thresh_db` to stop waiting.
+                         max_tail (float): Hard maximum time in seconds to wait (function returns no later than this many seconds after start).
+                     """
+                     start = time.monotonic()
     deadline = start + max_tail
     # Mandatory minimum tail.
     time.sleep(tail_min)
@@ -123,6 +217,14 @@ def wait_for_silence(rec: RingRecorder, *, tail_min: float, thresh_db: float,
 
 
 def open_editor(path: Path) -> None:
+    """
+    Open the given file in the editor specified by the `EDITOR` environment variable, if one is configured and available.
+    
+    If `EDITOR` is unset or empty, this function does nothing. If the configured editor executable is not found, the function silently returns without raising an exception. The editor is invoked with the file path as its sole argument and the editor's exit status is not checked.
+    
+    Parameters:
+        path (Path): Path to the file to open in the editor.
+    """
     editor = os.environ.get("EDITOR")
     if not editor:
         return
@@ -133,6 +235,18 @@ def open_editor(path: Path) -> None:
 
 
 def main() -> int:
+    """
+    Run the capture session command-line interface and perform an end-to-end VP-330 capture.
+    
+    This function parses CLI arguments, validates inputs, creates a dated session directory, copies
+    the provided MIDI file into the session, prompts or selects MIDI output and audio input devices,
+    records audio while sending the MIDI performance, waits for a configured silence tail, writes
+    the recorded audio and a JSON manifest into the session directory, creates session notes, and
+    optionally opens the notes in the user's editor.
+    
+    Returns:
+        int: Exit code (0 on success).
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--name", required=True)
     parser.add_argument("--midi", required=True, type=Path, help="Fixture MIDI path")

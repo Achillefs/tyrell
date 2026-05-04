@@ -18,6 +18,17 @@ SCHEMA_PATH = Path(__file__).parent / "schema.json"
 
 
 def resolve_captures_dir(arg: str | None) -> Path:
+    """
+    Resolve and validate the captures root directory.
+    
+    If `arg` is provided use it; otherwise read `VP330_CAPTURES_DIR` from the environment. Exits the process with an error message if neither is set or if the resolved path does not exist.
+    
+    Parameters:
+        arg (str | None): Optional path provided via the CLI `--root` argument.
+    
+    Returns:
+        Path: An expanded Path object pointing to an existing captures root directory.
+    """
     raw = arg or os.environ.get("VP330_CAPTURES_DIR")
     if not raw:
         sys.exit("error: pass --root or set $VP330_CAPTURES_DIR.")
@@ -28,11 +39,34 @@ def resolve_captures_dir(arg: str | None) -> Path:
 
 
 def midi_duration_seconds(path: Path) -> float:
+    """
+    Compute the duration of a MIDI file in seconds.
+    
+    Returns:
+        duration_seconds (float): Duration of the MIDI file in seconds.
+    """
     mid = mido.MidiFile(str(path))
     return float(mid.length)
 
 
 def validate_session(session_dir: Path, schema: dict) -> list[str]:
+    """
+    Validate a session directory's manifest, MIDI file, and audio file against the provided JSON schema.
+    
+    Performs these checks and collects human-readable issue strings:
+    - Manifest presence and JSON validity (returns ["missing manifest.json"] or a JSON parse error).
+    - Schema validation of the manifest (appends schema error messages with JSON path).
+    - Existence and parseability of the MIDI input file.
+    - Existence and readable metadata of the audio output file.
+    - Audio properties vs. manifest/audio expectations: sample rate (must be >= 48000), acceptable subtype (PCM_24, PCM_32, FLOAT, DOUBLE), channel count, declared duration tolerance (±0.5s), and that audio is not significantly shorter than MIDI (0.1s tolerance).
+    
+    Parameters:
+        session_dir (Path): Path to the session directory containing manifest.json and media files.
+        schema (dict): JSON Schema used to validate the manifest contents.
+    
+    Returns:
+        list[str]: A list of issue messages found during validation. An empty list indicates no issues.
+    """
     issues: list[str] = []
     manifest_path = session_dir / "manifest.json"
 
@@ -99,6 +133,14 @@ def validate_session(session_dir: Path, schema: dict) -> list[str]:
 
 
 def main() -> int:
+    """
+    Validate each session directory under the captures root, print per-session results, and exit with a status summarizing validation.
+    
+    Reads the JSON schema from SCHEMA_PATH, resolves the captures root from the --root argument or the VP330_CAPTURES_DIR environment variable, and iterates the directories in <root>/sessions. For each session it prints "OK" when validation passes or "FAIL" followed by a list of issues when validation fails, then prints a final summary line.
+    
+    Returns:
+        int: 0 if all sessions are valid, 1 if any session failed validation.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=None, help="captures root (defaults to $VP330_CAPTURES_DIR)")
     args = parser.parse_args()
