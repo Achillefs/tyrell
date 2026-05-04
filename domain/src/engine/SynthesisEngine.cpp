@@ -1,8 +1,14 @@
 #include "vp330/engine/SynthesisEngine.h"
 
-#include <algorithm>
+#include "vp330/values/Pitch.h"
+
+#include <cstddef>
 
 namespace vp330 {
+
+namespace {
+constexpr float kPerVoiceGain = 0.05f; // Phase 1 placeholder; Phase 3 replaces with section gain.
+}
 
 SynthesisEngine::SynthesisEngine(int sample_rate) : sample_rate_{sample_rate} {
 }
@@ -22,10 +28,24 @@ bool SynthesisEngine::is_note_active(MidiNote note) const {
 }
 
 void SynthesisEngine::render(float* left, float* right, std::size_t frames) {
-  // Task 8 fills this in. For now write silence so the state-machine tests
-  // can verify is_note_active without depending on audio output.
-  std::fill_n(left, frames, 0.0f);
-  std::fill_n(right, frames, 0.0f);
+  const double sr = static_cast<double>(sample_rate_);
+  for (std::size_t i = 0; i < frames; ++i) {
+    float sum = 0.0f;
+    for (int n = 0; n < 128; ++n) {
+      const auto idx = static_cast<std::size_t>(n);
+      if (!active_[idx]) continue;
+      const auto note = MidiNote{n};
+      const double freq = Pitch::from_midi_note(note).to_hertz().value();
+      const double inc = freq / sr;
+      auto& p = phase_[idx];
+      sum += (p < 0.5 ? 1.0f : -1.0f);
+      p += inc;
+      if (p >= 1.0) p -= 1.0;
+    }
+    const float out = sum * kPerVoiceGain;
+    left[i] = out;
+    right[i] = out;
+  }
 }
 
 } // namespace vp330
