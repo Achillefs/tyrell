@@ -66,8 +66,8 @@ Don't invent local jargon. Propose glossary additions in the same PR that introd
 
 Per spec §6 — implement these as you reach them, don't preempt:
 
-- CMake ≥ 3.22, top-level `project(VP330 CXX)`, C++20. JUCE/Catch2/rapidcheck via `FetchContent` pinned to tags.
-- Targets: `vp330_domain` (static lib), `VP330` (JUCE plugin: VST3/AU/Standalone in Phase 0; CLAP added in Phase 5), `vp330_render` (CLI), `vp330_tests` (Catch2; links domain only).
+- CMake ≥ 3.22, top-level `project(VP330 VERSION 0.1.0 LANGUAGES C CXX)`, C++20. (`C` is required because JUCE's `juce_add_plugin` emits some C compile rules.) JUCE/Catch2/rapidcheck via `FetchContent` pinned to tags.
+- Targets: `vp330_domain` (static lib), `VP330` (JUCE plugin: VST3/AU/Standalone in Phase 0; CLAP added in Phase 5), `vp330_render` (CLI), `vp330_tests` (Catch2; links `vp330_domain` directly and never links JUCE — test helpers may link libsndfile for WAV I/O).
 - `.clang-format` LLVM base, `ColumnLimit: 100`, `PointerAlignment: Left`, `AccessModifierOffset: -2`.
 - `.clang-tidy` enables `bugprone-*`, `cert-*`, `cppcoreguidelines-*`, `modernize-*`, `performance-*`, `readability-*`.
 - CI: `ci.yml` (macOS-14 + ubuntu-24.04 build/test), `arm-cross.yml` (aarch64 cross-compile against Elk SDK), `lint.yml` (format check, clang-tidy on changed files, **domain-isolation grep check**).

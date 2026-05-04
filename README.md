@@ -41,6 +41,7 @@ Plugin artefacts after build (paths may use `Debug/` instead of `Release/`):
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) covers commit conventions, PR process, and L1–L4 test discipline.
 - [`THIRD_PARTY.md`](THIRD_PARTY.md) inventories dependencies and licenses.
 - [`docs/superpowers/specs/`](docs/superpowers/specs/) holds per-phase design docs.
+- [`tools/capture/README.md`](tools/capture/README.md) explains the reference-capture protocol and tooling for the L4 reference repo at `$VP330_CAPTURES_DIR`.
 
 ## License
 

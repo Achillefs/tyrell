@@ -6,6 +6,10 @@ on:
     tags: ['v*']
   workflow_dispatch:
 
+concurrency:
+  group: arm-cross-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   cross-aarch64:
     name: aarch64-linux-gnu

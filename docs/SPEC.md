@@ -1,6 +1,6 @@
 # VP-330 Recreation — Project Specification
 
-**Version:** 1.3
+**Version:** 1.4
 **Status:** Pre-implementation
 **License:** GPL-3.0 (driven by JUCE GPL usage)
 **Hardware Reference:** Roland VP-330 **MkII**
@@ -220,15 +220,18 @@ When new concepts emerge during implementation, propose additions to this table 
 │   └── tools/                      # Scripts to drive the VP-330 and capture.
 │
 └── tools/
-    ├── ab-compare/                 # Render plugin + load capture, compute spectral distance.
-    └── render-cli/                 # Convenience wrapper around infrastructure/cli.
+    ├── install-hooks.sh            # Installs the project pre-commit hook (clang-format + domain isolation).
+    ├── golden/                     # Generators for L3 fixtures and baselines (silence-1s.{mid,wav}).
+    ├── capture/                    # Python tooling that drives the MkII and writes session dirs.
+    ├── ab-compare/                 # Phase 4+: render plugin + load capture, compute spectral distance.
+    └── render-cli/                 # Phase 4+: convenience wrapper around infrastructure/cli.
 ```
 
 ### Key invariants **[CC]**
 
 - **Domain isolation:** `grep -rE '#include.*<juce_|<sndfile|<alsa' domain/` returns zero results. CI fails the build otherwise.
 - **No circular dependencies:** `infrastructure/*` depends on `domain/`. `domain/` depends on nothing in this repo.
-- **Tests can link domain directly.** They do not link JUCE.
+- **Tests can link domain directly.** They do not link JUCE. Test helpers under `tests/` may link libsndfile for WAV I/O — that is permitted because the spec §5 isolation invariant restricts `domain/`, not `tests/`.
 - **One public header per type.** Implementation in `.cpp` next to the corresponding `.h`'s mirror location under `src/`.
 
 ---
@@ -237,14 +240,14 @@ When new concepts emerge during implementation, propose additions to this table 
 
 ### CMake structure
 
-Top-level `CMakeLists.txt` declares `project(VP330 CXX)`, sets C++20, and includes `domain/`, `infrastructure/`, `tests/`, `tools/` as subdirectories. JUCE is fetched via `FetchContent` pinned to a tag. Catch2 and rapidcheck likewise.
+Top-level `CMakeLists.txt` declares `project(VP330 VERSION 0.1.0 LANGUAGES C CXX)`, sets C++20, and includes `domain/`, `infrastructure/`, `tests/` as subdirectories. (`tools/` is not a CMake subdirectory — it holds shell/Python helpers.) The `C` language is required because JUCE's `juce_add_plugin` emits some C compile rules. JUCE is fetched via `FetchContent` pinned to a tag. Catch2 and rapidcheck likewise.
 
 Targets:
 
 - `vp330_domain` — static library, the core.
 - `VP330` — JUCE plugin (VST3, AU, Standalone; CLAP added in Phase 5).
 - `vp330_render` — CLI renderer executable.
-- `vp330_tests` — Catch2 test runner, links `vp330_domain` only.
+- `vp330_tests` — Catch2 test runner. Links `vp330_domain` directly and never links JUCE. Test helpers may link libsndfile for WAV I/O (`tests/golden/helpers/wav_io`).
 
 ### Formatting & linting
 
@@ -526,3 +529,4 @@ Recorded here so they don't get lost:
 | 2026-05-04 | 1.1     | Pinned hardware reference to **MkII** (author's unit). Added `ChoirFilterBank` and `ChoirVariant` to ubiquitous language; rewrote Phase 3 to reflect 7-filter pool / 4-selection-per-variant architecture. Documented Ensemble as non-defeatable on Strings (Phase 7). Corrected keyboard size (49 keys / 4 octaves on MkII). Expanded Phase 0 capture protocol to cover all ChoirVariants. Added external listening references list. MkI explicitly out of scope. |
 | 2026-05-04 | 1.2     | Resolved §11 captures-repo-placement question: private companion repo, linked via `VP330_CAPTURES_DIR` env var. Recorded alongside Phase 0 design doc (`docs/superpowers/specs/2026-05-04-phase-0-design.md`). |
 | 2026-05-04 | 1.3     | Defer CLAP format to Phase 5 — JUCE 8.0.12 lacks native CLAP support; using the `clap-juce-extensions` shim now is unnecessary work for Phase 0's walking-skeleton goal. Phase 0 ships VST3 / AU / Standalone; Phase 5 adds CLAP alongside the GUI. §1, §2, §6, Phase 5 done-list updated. |
+| 2026-05-04 | 1.4     | Phase 0 final-review corrections, all observed during `phase-0-impl` execution: §5 tools/ tree updated to reflect what was actually delivered (`install-hooks.sh`, `golden/`, `capture/`); ab-compare and render-cli marked Phase 4+. §5 invariant on tests clarified — test helpers may link libsndfile (the isolation rule only binds `domain/`). §6 CMake project signature corrected to `project(VP330 VERSION 0.1.0 LANGUAGES C CXX)` — `C` is required by JUCE's `juce_add_plugin`. §6 vp330_tests description updated to match the build graph. |
