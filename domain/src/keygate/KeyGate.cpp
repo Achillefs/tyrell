@@ -1,6 +1,5 @@
 #include "vp330/keygate/KeyGate.h"
 
-#include <algorithm>
 #include <cmath>
 
 namespace vp330 {
@@ -37,6 +36,7 @@ void KeyGate::advance_one_sample() {
   switch (state_) {
   case State::Idle:
     envelope_ = 0.0;
+    phase_index_ = 0;
     break;
   case State::Attacking:
     ++phase_index_;
