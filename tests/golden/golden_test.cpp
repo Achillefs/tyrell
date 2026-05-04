@@ -81,6 +81,7 @@ TEST_CASE("golden: single C4 renders a square at ~261.63 Hz, sane RMS", "[golden
   const auto wav = render_fixture("single-c4-1s.mid", 48000, 1.0);
   REQUIRE(wav.sample_rate == 48000);
   REQUIRE(wav.channels == 2);
+  REQUIRE(wav.samples.size() == wav.frames * static_cast<std::size_t>(wav.channels));
 
   const auto left = left_channel(wav);
   const auto f = zero_crossing_frequency(left, wav.sample_rate);
