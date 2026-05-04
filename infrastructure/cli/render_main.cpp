@@ -121,21 +121,7 @@ bool parse_args(int argc, char** argv, Args& out) {
   return true;
 }
 
-} /**
- * @brief Command-line entry point that renders audio to a WAV file.
- *
- * Parses CLI options, opens the specified output WAV file, writes silent audio for
- * the configured duration and sample rate, and exits with a status indicating success
- * or the type of failure.
- *
- * @param argc Argument count from the process invocation.
- * @param argv Argument vector from the process invocation.
- * @return int Exit status: `0` on success, `2` for argument/usage errors, `1` for file
- * open or write failures.
- *
- * @note The current implementation writes silence as a placeholder; future versions
- * will generate audio from the synthesis engine.
- */
+} // namespace
 
 int main(int argc, char** argv) {
   Args args;

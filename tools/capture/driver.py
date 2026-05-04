@@ -189,17 +189,12 @@ def play_midi(port_name: str, midi_path: Path) -> None:
 
 def wait_for_silence(rec: RingRecorder, *, tail_min: float, thresh_db: float,
                      window_s: float, max_tail: float) -> None:
+    """Wait for `rec.rms_db` to stay below `thresh_db` for `window_s` seconds.
+
+    Honors a mandatory `tail_min` minimum wait before silence detection begins,
+    and a hard `max_tail` ceiling before returning unconditionally.
     """
-                     Wait for the recorder's RMS level to remain below a threshold for a continuous window, with a required minimum tail and a hard maximum wait.
-                     
-                     Parameters:
-                         rec (RingRecorder): Recorder providing the `rms_db` property to poll.
-                         tail_min (float): Mandatory minimum tail time in seconds to wait before checking for silence.
-                         thresh_db (float): Silence threshold in decibels; considered silent when `rec.rms_db < thresh_db`.
-                         window_s (float): Required continuous time in seconds that the level must remain below `thresh_db` to stop waiting.
-                         max_tail (float): Hard maximum time in seconds to wait (function returns no later than this many seconds after start).
-                     """
-                     start = time.monotonic()
+    start = time.monotonic()
     deadline = start + max_tail
     # Mandatory minimum tail.
     time.sleep(tail_min)

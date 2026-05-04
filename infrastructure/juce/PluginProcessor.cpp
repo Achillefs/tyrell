@@ -32,7 +32,8 @@ void VP330Processor::releaseResources() {
 /**
  * @brief Clears the provided audio buffer for the current processing block.
  *
- * This processor removes all samples from the buffer and does not produce or modify audio beyond clearing.
+ * This processor removes all samples from the buffer and does not produce or modify audio beyond
+ * clearing.
  *
  * @param buffer Audio buffer for the current block; its contents are cleared.
  * @param midiBuffer Unused MIDI messages for the current block (ignored).
@@ -58,7 +59,8 @@ bool VP330Processor::isBusesLayoutSupported(const BusesLayout& layouts) const {
 /**
  * @brief Creates and returns a new VP330Processor audio plugin instance.
  *
- * The caller receives ownership of the returned pointer and is responsible for its lifetime management.
+ * The caller receives ownership of the returned pointer and is responsible for its lifetime
+ * management.
  *
  * @return juce::AudioProcessor* Pointer to a newly-allocated VP330Processor instance.
  */

@@ -26,7 +26,8 @@ namespace {
  *
  * @param fixture_filename Filename of the golden fixture (base name or relative
  *        filename) used to derive the output WAV name.
- * @return std::string Full path to the temporary output WAV (system-temp/vp330_golden/<fixture_filename>.out.wav).
+ * @return std::string Full path to the temporary output WAV
+ * (system-temp/vp330_golden/<fixture_filename>.out.wav).
  */
 std::string make_temp_path(const std::string& fixture_filename) {
   auto dir = std::filesystem::temp_directory_path() / "vp330_golden";
@@ -36,19 +37,7 @@ std::string make_temp_path(const std::string& fixture_filename) {
   return (dir / (fixture_filename + ".out.wav")).string();
 }
 
-} /**
- * @brief Render a golden fixture with the external renderer and load the resulting WAV.
- *
- * The function locates the fixture under the configured GOLDEN_FIXTURES_DIR, invokes the
- * external VP330_RENDER_BINARY to produce a temporary output WAV, and returns the loaded
- * audio.
- *
- * @param fixture_filename Filename of the fixture relative to GOLDEN_FIXTURES_DIR.
- * @param sample_rate Output sample rate in Hz for the rendered WAV.
- * @param duration_seconds Duration in seconds to render.
- * @return Wav The loaded WAV data produced by the renderer.
- * @throws std::runtime_error If the external renderer exits with a non-zero status.
- */
+} // namespace
 
 Wav render_fixture(const std::string& fixture_filename, int sample_rate, double duration_seconds) {
   const std::string fixture_path = std::string(GOLDEN_FIXTURES_DIR) + "/" + fixture_filename;
