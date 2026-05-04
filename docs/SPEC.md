@@ -1,7 +1,7 @@
 # VP-330 Recreation — Project Specification
 
 **Version:** 1.4
-**Status:** Pre-implementation
+**Status:** Phase 0 implemented; Phase 1 not yet begun
 **License:** GPL-3.0 (driven by JUCE GPL usage)
 **Hardware Reference:** Roland VP-330 **MkII**
 
@@ -210,15 +210,6 @@ When new concepts emerge during implementation, propose additions to this table 
 │   │   └── golden_test.cpp         # Render fixture, compare to baseline.
 │   └── reference/                  # L4 — runs against reference-captures/.
 │
-├── reference-captures/             # LFS. Author's VP-330 recordings.
-│   ├── README.md                   # Capture protocol (Section 8).
-│   ├── sessions/
-│   │   └── YYYY-MM-DD-<name>/
-│   │       ├── manifest.json       # MIDI input, instrument settings, signal path.
-│   │       ├── input.mid
-│   │       └── output.wav
-│   └── tools/                      # Scripts to drive the VP-330 and capture.
-│
 └── tools/
     ├── install-hooks.sh            # Installs the project pre-commit hook (clang-format + domain isolation).
     ├── golden/                     # Generators for L3 fixtures and baselines (silence-1s.{mid,wav}).
@@ -226,6 +217,8 @@ When new concepts emerge during implementation, propose additions to this table 
     ├── ab-compare/                 # Phase 4+: render plugin + load capture, compute spectral distance.
     └── render-cli/                 # Phase 4+: convenience wrapper around infrastructure/cli.
 ```
+
+**Reference captures (out-of-tree).** Captures live in a private companion repo at `$VP330_CAPTURES_DIR` (resolved §11). The L4 reference tooling reads from there; the public repo never contains a `reference-captures/` directory. Each session directory has the layout documented in §8.
 
 ### Key invariants **[CC]**
 

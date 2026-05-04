@@ -11,7 +11,7 @@ explicit approval (spec §10).
 | [rapidcheck](https://github.com/emil-e/rapidcheck) | BSD-2-Clause | commit `b2d9ed2dddefc4b84318d664b4f221eb792d89c7` (no upstream tags) | `tests/` (property tests) | yes |
 | [libsndfile](https://github.com/libsndfile/libsndfile) | LGPL-2.1 | system package (`brew install libsndfile`, `apt install libsndfile1-dev`) | `infrastructure/cli/`, `tests/golden/helpers/wav_io` | yes |
 
-### Python tooling (`tools/capture/requirements.txt`)
+## Python tooling (`tools/capture/requirements.txt`)
 
 These dependencies ship the reference-capture driver and validator. They are
 not linked into the C++ binaries — only invoked at recording time on the

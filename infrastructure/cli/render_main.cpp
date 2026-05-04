@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -135,7 +136,14 @@ int main(int argc, char** argv) {
   }
 
   const int channels = 2;
-  const auto frames = static_cast<sf_count_t>(args.duration_seconds * args.sample_rate);
+  const double frame_count = args.duration_seconds * static_cast<double>(args.sample_rate);
+  if (!std::isfinite(frame_count) || frame_count <= 0.0 ||
+      frame_count > static_cast<double>(std::numeric_limits<sf_count_t>::max())) {
+    std::fprintf(stderr, "render too long: duration*sample_rate=%g exceeds sf_count_t range\n",
+                 frame_count);
+    return 2;
+  }
+  const auto frames = static_cast<sf_count_t>(frame_count);
 
   SF_INFO info{};
   info.samplerate = args.sample_rate;
