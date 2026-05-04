@@ -4,7 +4,7 @@ juce_add_plugin(VP330
     BUNDLE_ID                 "org.vp330.VP330"
     PLUGIN_MANUFACTURER_CODE  Vp33
     PLUGIN_CODE               Vprc
-    FORMATS                   VST3 AU CLAP Standalone
+    FORMATS                   VST3 AU Standalone
     IS_SYNTH                  TRUE
     NEEDS_MIDI_INPUT          TRUE
     NEEDS_MIDI_OUTPUT         FALSE

@@ -31,7 +31,7 @@ The brainstorm resolved the following choices. Each is treated as binding for th
 | Capture-tooling depth | Full automation (driver script). | Schema + scaffolder + validator + driver. |
 | Capture-tooling runtime | Python 3.11+. | `mido`, `python-rtmidi`, `sounddevice`, `soundfile`, `jsonschema`, `numpy`. |
 | Capture-tooling stop policy | Hybrid: fixed minimum tail + silence detection up to a hard cap. | Implemented in-process via `numpy` RMS over the live ring buffer. |
-| Plugin formats from Phase 0 | All four (VST3, AU, CLAP, Standalone) where the platform supports them. | AU only on macOS. |
+| Plugin formats from Phase 0 | VST3, AU, Standalone where the platform supports them. CLAP deferred to Phase 5. | AU only on macOS. JUCE 8.0.12 has no native CLAP support; rather than pull in `clap-juce-extensions` for an empty-plugin walking skeleton, defer until Phase 5 wires it alongside the GUI. Resolved during execution; spec bumped to 1.3. |
 | `rapidcheck` and pre-commit hooks | Both wired up in Phase 0. | rapidcheck has no consumers yet (first L2 test arrives in Phase 2/3). Hooks live-validated in 0c. |
 | Build sequence | Walking-skeleton-first (Approach B). | Get render→compare→CI green before adding lint/docs/tooling. |
 | Repo visibility | Public (resolved live during brainstorm). | Unmetered GH Actions minutes; full matrix stands. |
@@ -42,7 +42,7 @@ When Phase 0 closes, the repo contains:
 
 **Working software:**
 - `vp330_domain` static library — public headers under `domain/include/vp330/` per spec §5; no implementation yet (one stub TU to satisfy the linker).
-- `VP330` JUCE plugin — VST3/AU/CLAP/Standalone on macOS, VST3/CLAP/Standalone on Linux. Loads in any host. `processBlock` writes silence.
+- `VP330` JUCE plugin — VST3/AU/Standalone on macOS, VST3/Standalone on Linux. Loads in any host that supports the format. `processBlock` writes silence. (CLAP added in Phase 5 via `clap-juce-extensions`.)
 - `vp330_render` CLI — `--input <mid> --output <wav> --duration <sec>`, writes a 48 kHz / 24-bit WAV. Output is silence.
 - `vp330_tests` — Catch2 binary, links `vp330_domain` only (per spec §5 invariant), contains the walking-skeleton golden test.
 
@@ -82,7 +82,7 @@ Walking-skeleton-first, organized into six sub-phases. Each numbered item is one
 
 ### Phase 0b — CI green across the matrix
 
-7. Add AU + CLAP plugin formats.
+7. Add AU plugin format (CLAP deferred to Phase 5 — JUCE 8.0.12 has no native CLAP support).
 8. `ci.yml`: macOS-14 + ubuntu-24.04 matrix; walking-skeleton passes on both.
 9. `arm-cross.yml` committed (active if Elk SDK sysroot available; otherwise a documented no-op stub).
 
@@ -113,7 +113,7 @@ Walking-skeleton-first, organized into six sub-phases. Each numbered item is one
 ### Notes on ordering
 
 - LFS rules ship in commit 1 so the baseline WAV in commit 6 is correctly LFS-tracked.
-- AU/CLAP land *after* the walking-skeleton is locally green (commit 6) but *before* CI (commit 8), so all four formats are validated together on macOS via CI.
+- AU lands *after* the walking-skeleton is locally green (commit 6) but *before* CI (commit 8), so all formats are validated together via CI.
 - rapidcheck (13) lands as pure plumbing — no consumer until Phase 2/3.
 - Capture tooling is last because it has zero dependencies on the rest of Phase 0.
 
@@ -237,7 +237,7 @@ None of these duplicate `docs/SPEC.md`; they reference it.
 - One-paragraph pitch (what it is, MkII-only, GPL-3, status: pre-implementation / Phase 0).
 - Build instructions for macOS and Linux (`cmake -B build && cmake --build build`).
 - How to run the test suite (`ctest --test-dir build`).
-- How to load the plugin (paths to VST3/AU/CLAP after build).
+- How to load the plugin (paths to VST3/AU/Standalone after build).
 - Where to learn more: `docs/SPEC.md` is the contract; `GLOSSARY.md` is the vocabulary; `CONTRIBUTING.md` is the process.
 - License (GPL-3, with the JUCE-transitivity note).
 

@@ -1,6 +1,6 @@
 # VP-330 Recreation — Project Specification
 
-**Version:** 1.2
+**Version:** 1.3
 **Status:** Pre-implementation
 **License:** GPL-3.0 (driven by JUCE GPL usage)
 **Hardware Reference:** Roland VP-330 **MkII**
@@ -17,7 +17,7 @@ This spec is written to be consumed by both human contributors and Claude Code a
 
 A digital recreation of the **Roland VP-330 Vocoder Plus** (1979), faithful enough to the original architecture that it can replace the hardware in a recording or live context. The project ships as:
 
-1. A cross-format audio plugin (VST3, AU, CLAP) for desktop DAWs.
+1. A cross-format audio plugin (VST3, AU; CLAP added in Phase 5) for desktop DAWs.
 2. A standalone module for stage use, running on a Raspberry Pi 4 under Elk Audio OS, the same plugin binary hosted by Sushi.
 
 ### What "faithful" means here
@@ -48,7 +48,7 @@ The author owns a working **VP-330 MkII** and will use it as the reference instr
 | Layer | Choice | Notes |
 |---|---|---|
 | Language | C++20 | `std::span`, concepts, designated initializers used freely. No C++23 features. |
-| Plugin framework | JUCE 8.x (GPL-3) | VST3 / AU / CLAP / Standalone targets all built. |
+| Plugin framework | JUCE 8.x (GPL-3) | VST3 / AU / Standalone built from Phase 0; CLAP added in Phase 5 via `clap-juce-extensions` (JUCE 8.0.12 has no native CLAP support). |
 | Build | CMake ≥ 3.22 | JUCE's CMake support; no Projucer. |
 | Test framework | Catch2 v3 | `catch2/catch_test_macros.hpp` style. |
 | Property testing | rapidcheck | For DSP invariants (filter stability, envelope monotonicity, etc.). |
@@ -242,7 +242,7 @@ Top-level `CMakeLists.txt` declares `project(VP330 CXX)`, sets C++20, and includ
 Targets:
 
 - `vp330_domain` — static library, the core.
-- `VP330` — JUCE plugin (VST3, AU, CLAP, Standalone).
+- `VP330` — JUCE plugin (VST3, AU, Standalone; CLAP added in Phase 5).
 - `vp330_render` — CLI renderer executable.
 - `vp330_tests` — Catch2 test runner, links `vp330_domain` only.
 
@@ -447,6 +447,7 @@ Deliverables:
 - [ ] Preset save/load via JUCE's APVTS state.
 - [ ] MIDI CC mapping for live-relevant params (level, vibrato depth, ensemble bypass).
 - [ ] Plugin validates with `pluginval` at strictness level 8+ on macOS and Linux.
+- [ ] **CLAP format added** via the `clap-juce-extensions` shim (MIT, GPL-3-compatible). Deferred from Phase 0 because JUCE 8.0.12 has no native CLAP support and the walking-skeleton goal does not benefit from CLAP. Add the dependency, record in `THIRD_PARTY.md`, ship a `VP330_CLAP` target, and verify load in a CLAP host.
 - [ ] Tag: `v1.0`.
 
 ### Phase 6 — Elk Deployment
@@ -524,3 +525,4 @@ Recorded here so they don't get lost:
 | 2026-05-04 | 1.0     | Initial specification. |
 | 2026-05-04 | 1.1     | Pinned hardware reference to **MkII** (author's unit). Added `ChoirFilterBank` and `ChoirVariant` to ubiquitous language; rewrote Phase 3 to reflect 7-filter pool / 4-selection-per-variant architecture. Documented Ensemble as non-defeatable on Strings (Phase 7). Corrected keyboard size (49 keys / 4 octaves on MkII). Expanded Phase 0 capture protocol to cover all ChoirVariants. Added external listening references list. MkI explicitly out of scope. |
 | 2026-05-04 | 1.2     | Resolved §11 captures-repo-placement question: private companion repo, linked via `VP330_CAPTURES_DIR` env var. Recorded alongside Phase 0 design doc (`docs/superpowers/specs/2026-05-04-phase-0-design.md`). |
+| 2026-05-04 | 1.3     | Defer CLAP format to Phase 5 — JUCE 8.0.12 lacks native CLAP support; using the `clap-juce-extensions` shim now is unnecessary work for Phase 0's walking-skeleton goal. Phase 0 ships VST3 / AU / Standalone; Phase 5 adds CLAP alongside the GUI. §1, §2, §6, Phase 5 done-list updated. |

@@ -450,7 +450,8 @@ git commit -m "$(cat <<'EOF'
 build: empty VP330 plugin (VST3 + Standalone, silence)
 
 JUCE 8.0.12 via FetchContent. AudioProcessor clears the output buffer in
-processBlock — silence by construction. AU + CLAP added in a follow-up commit.
+processBlock — silence by construction. AU added in a follow-up commit.
+(CLAP deferred to Phase 5; see SPEC 1.3 change log.)
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -1147,26 +1148,30 @@ EOF
 
 ---
 
-## Task 7: Add AU + CLAP plugin formats
+## Task 7: Add AU plugin format (CLAP deferred to Phase 5)
 
 **Files:**
 - Modify: `infrastructure/juce/CMakeLists.txt`
 
-- [ ] **Step 1: Update FORMATS line**
+> **Update during execution (2026-05-04):** JUCE 8.0.12 has no native CLAP support. The standard path (`free-audio/clap-juce-extensions`) introduces a new dependency that's not justified for an empty-plugin walking skeleton. CLAP is deferred to Phase 5, where it lands alongside the GUI. SPEC bumped to 1.3 in the same commit set.
+
+- [ ] **Step 1: Update FORMATS line and fix PLUGIN_CODE collision**
 
 In `infrastructure/juce/CMakeLists.txt`, replace:
 
 ```cmake
+    PLUGIN_CODE               Vp33
     FORMATS                   VST3 Standalone
 ```
 
 with:
 
 ```cmake
-    FORMATS                   VST3 AU CLAP Standalone
+    PLUGIN_CODE               Vprc
+    FORMATS                   VST3 AU Standalone
 ```
 
-JUCE 8 ships CLAP support natively; no additional flags or modules needed.
+The PLUGIN_CODE change resolves a code-review finding from Task 3: hosts combine `(PLUGIN_MANUFACTURER_CODE, PLUGIN_CODE)` as a unique product identity, so the two should differ. Manufacturer stays `Vp33`.
 
 - [ ] **Step 2: Reconfigure and build**
 
@@ -1175,10 +1180,9 @@ cmake -B build -S .
 cmake --build build --target VP330_All
 ```
 
-Expected (on macOS): all four format targets build:
+Expected (on macOS): three format targets build:
 - `VP330_VST3` → `*.vst3` bundle
 - `VP330_AU` → `*.component` bundle
-- `VP330_CLAP` → `*.clap` bundle
 - `VP330_Standalone` → `*.app`
 
 - [ ] **Step 3: List the artefacts**
@@ -1187,7 +1191,7 @@ Expected (on macOS): all four format targets build:
 find build/infrastructure/juce/VP330_artefacts -maxdepth 3 -mindepth 1 -name 'VP330*' | sort
 ```
 
-Expected: lines for VST3, AU, CLAP, Standalone artefacts.
+Expected: lines for VST3, AU, Standalone artefacts.
 
 - [ ] **Step 4: Verify tests still pass**
 
@@ -1202,10 +1206,15 @@ Expected: walking-skeleton test still passes.
 ```bash
 git add infrastructure/juce/CMakeLists.txt
 git commit -m "$(cat <<'EOF'
-build: add AU + CLAP plugin formats (full matrix)
+build: add AU plugin format; fix PLUGIN_CODE collision
 
-All four formats build on macOS; ubuntu-24.04 will skip AU automatically
-(JUCE handles platform support per format).
+VST3 + AU + Standalone build on macOS; ubuntu-24.04 will skip AU automatically.
+PLUGIN_CODE was identical to PLUGIN_MANUFACTURER_CODE (both "Vp33"); hosts
+combine the pair as a unique product identity, so they should differ.
+PLUGIN_MANUFACTURER_CODE stays "Vp33"; PLUGIN_CODE becomes "Vprc".
+
+CLAP deferred to Phase 5 — JUCE 8.0.12 has no native CLAP support, and the
+clap-juce-extensions shim is unnecessary work for the walking skeleton.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -2005,8 +2014,8 @@ EOF
 # VP-330 MkII Recreation
 
 A C++20 / JUCE 8 digital recreation of the **Roland VP-330 Vocoder Plus
-(MkII, 1980)**. Cross-format plugin (VST3 / AU / CLAP / Standalone) with a
-Raspberry Pi 4 / Elk Audio OS standalone target.
+(MkII, 1980)**. Cross-format plugin (VST3 / AU / Standalone; CLAP added in
+Phase 5) with a Raspberry Pi 4 / Elk Audio OS standalone target.
 
 **Status:** Pre-implementation. Phase 0 (this milestone) stands up the build
 system, walking-skeleton golden test, CI, and capture tooling. No DSP yet.
@@ -2035,8 +2044,8 @@ Plugin artefacts after build (paths may use `Debug/` instead of `Release/`):
 
 - VST3: `build/infrastructure/juce/VP330_artefacts/Release/VST3/VP330.vst3`
 - AU (macOS only): `build/infrastructure/juce/VP330_artefacts/Release/AU/VP330.component`
-- CLAP: `build/infrastructure/juce/VP330_artefacts/Release/CLAP/VP330.clap`
 - Standalone: `build/infrastructure/juce/VP330_artefacts/Release/Standalone/VP330.app` (macOS) or `VP330` (Linux)
+- CLAP: deferred to Phase 5 (JUCE 8.0.12 has no native CLAP support).
 
 ## Project orientation
 
@@ -3053,10 +3062,9 @@ cmake -B build -S .
 cmake --build build
 ctest --test-dir build --output-on-failure
 
-# Confirm artefacts:
+# Confirm artefacts (CLAP deferred to Phase 5):
 test -f build/infrastructure/juce/VP330_artefacts/*/VST3/VP330.vst3/Contents/Info.plist
 test -d build/infrastructure/juce/VP330_artefacts/*/AU/VP330.component
-test -f build/infrastructure/juce/VP330_artefacts/*/CLAP/VP330.clap
 test -d build/infrastructure/juce/VP330_artefacts/*/Standalone/VP330.app
 test -f build/infrastructure/cli/vp330_render
 test -f build/tests/vp330_tests
