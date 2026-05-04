@@ -7,6 +7,8 @@ from pathlib import Path
 
 
 def vlq(value: int) -> bytes:
+    if value < 0:
+        raise ValueError("VLQ value must be non-negative")
     if value == 0:
         return b"\x00"
     parts = []
