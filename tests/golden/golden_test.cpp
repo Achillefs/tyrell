@@ -5,6 +5,10 @@
 
 #include <string>
 
+#ifndef GOLDEN_BASELINES_DIR
+#error "GOLDEN_BASELINES_DIR must be defined by CMake"
+#endif
+
 using namespace vp330::test;
 
 TEST_CASE("walking skeleton: silence renders to silence", "[golden]") {

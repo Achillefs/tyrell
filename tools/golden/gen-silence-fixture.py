@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate tests/golden/fixtures/silence-1s.mid: a 1-second MIDI file with no notes."""
+"""Generate tests/golden/fixtures/silence-1s.mid: a 1-second MIDI file with no notes.
+
+Header: format 0, 1 track, 480 ticks per quarter note (PPQN).
+Tempo: 500_000 µs/quarter = 120 BPM → 1 quarter = 0.5 s, so 1.0 s = 2 quarters = 960 ticks.
+"""
 
 import argparse
 import struct
@@ -24,7 +28,7 @@ def main() -> int:
 
     header = b"MThd" + struct.pack(">IHHH", 6, 0, 1, 480)
     tempo_event = b"\x00\xFF\x51\x03" + b"\x07\xA1\x20"
-    end_of_track = variable_length_quantity(1920) + b"\xFF\x2F\x00"
+    end_of_track = variable_length_quantity(960) + b"\xFF\x2F\x00"
     track_data = tempo_event + end_of_track
     track = b"MTrk" + struct.pack(">I", len(track_data)) + track_data
 
