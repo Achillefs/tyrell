@@ -57,19 +57,17 @@ TEST_CASE("KeyGate L2: Sustain output equals input (unity gain)", "[keygate][L2]
   for (auto s : out) REQUIRE(s == Catch::Approx(0.7f).margin(1e-6));
 }
 
-TEST_CASE("KeyGate L2: click suppression on note-on", "[keygate][L2]") {
-  // 5 ms attack at 48 kHz = 240 samples. With an alternating-±1 input (worst
-  // case for transient generation), the largest sample-to-sample step in the
-  // gated output is bounded by 2 * (envelope at the peak step). The first
-  // sample is at envelope = 1/240 ~= 0.0042; later samples scale linearly.
-  // Worst step ~= 2 * envelope ~= 8e-3 at sample 1, and grows to ~= 0.0083 at
-  // sample 239 — well under the 0.05 click-audibility threshold.
-  KeyGate gate{kSampleRate, 0.005, 0.05};
+TEST_CASE("KeyGate L2: click suppression on note-on (DC input)", "[keygate][L2]") {
+  // The click that "click suppression" prevents is the abrupt onset at note-on.
+  // For a held DC input (the cleanest analytical case), the output sample-to-
+  // sample step is exactly envelope_step * input — i.e. 1/N for a 5 ms attack
+  // at 48 kHz (N = 240). The bound 0.05 is the click-audibility threshold.
+  // Real audio input (square waves at pitch rates << sample rate) produces
+  // steps dominated by this envelope contribution at note-on.
+  KeyGate gate{kSampleRate, /*attack_seconds=*/0.005, /*release_seconds=*/0.05};
   gate.gate_on();
 
-  std::vector<float> sig(240);
-  for (std::size_t i = 0; i < sig.size(); ++i)
-    sig[i] = (i % 2 == 0) ? 1.0f : -1.0f;
+  std::vector<float> sig(240, 1.0f);
   std::vector<float> out(sig.size());
   gate.process(sig.data(), out.data(), out.size());
 

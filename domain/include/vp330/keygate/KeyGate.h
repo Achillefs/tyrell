@@ -27,7 +27,6 @@ private:
   State state_ = State::Idle;
   double envelope_ = 0.0;    // current 0..1 envelope amplitude
   int phase_index_ = 0;      // sample index within current Attacking/Releasing run
-  float prev_out_ = 0.0f;    // last output sample, used for slew-rate limiting on attack
 };
 
 } // namespace vp330
