@@ -169,6 +169,11 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "render too long: duration*sample_rate=%g\n", frame_count_d);
     return 2;
   }
+  if (frame_count_d < 1.0) {
+    std::fprintf(stderr, "render too short: duration*sample_rate=%g (must be ≥ 1 frame)\n",
+                 frame_count_d);
+    return 2;
+  }
   const auto frames = static_cast<std::size_t>(frame_count_d);
 
   vp330::cli::ParsedMidi parsed;
