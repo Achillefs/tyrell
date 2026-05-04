@@ -2,6 +2,7 @@ add_library(vp330_domain STATIC
     src/engine/SynthesisEngine.cpp
     src/tod/TopOctaveDivider.cpp
     src/tod/OctaveDivider.cpp
+    src/keygate/KeyGate.cpp
 )
 
 target_include_directories(vp330_domain

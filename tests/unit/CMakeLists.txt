@@ -13,4 +13,5 @@ target_sources(vp330_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/cli/SmfReaderTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tod/TopOctaveDividerTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/tod/OctaveDividerTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/keygate/KeyGateTest.cpp
 )
