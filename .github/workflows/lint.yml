@@ -50,7 +50,11 @@ jobs:
       - name: Determine changed files
         id: changed
         run: |
-          base="${{ github.event.pull_request.base.sha || 'origin/main' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
           mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$base...HEAD" -- '*.cpp' '*.h' || true)
           printf '%s\n' "${files[@]}" > changed.txt
           echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
