@@ -157,7 +157,7 @@ When new concepts emerge during implementation, propose additions to this table 
 
 ```text
 .
-├── SPEC.md                         # This document.
+├── docs/SPEC.md                    # This document.
 ├── README.md                       # Project pitch + quickstart.
 ├── GLOSSARY.md                     # Source of truth: copy of Section 4, kept in sync.
 ├── CONTRIBUTING.md                 # Commit conventions, PR process, test discipline.
