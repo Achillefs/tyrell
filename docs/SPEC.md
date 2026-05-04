@@ -1,7 +1,7 @@
 # VP-330 Recreation — Project Specification
 
-**Version:** 1.4
-**Status:** Phase 0 implemented; Phase 1 not yet begun
+**Version:** 1.5
+**Status:** Phase 1 complete; Phase 2 not yet begun
 **License:** GPL-3.0 (driven by JUCE GPL usage)
 **Hardware Reference:** Roland VP-330 **MkII**
 
@@ -392,13 +392,13 @@ Deliverables:
 
 **Goal:** MIDI in → naive square-wave polyphonic out, end-to-end through both adapters.
 
-- [ ] `MidiNote`, `Hertz`, `Pitch` value types with full L1 coverage.
-- [ ] `MidiSource`, `AudioSink`, `Clock` ports defined.
-- [ ] `SynthesisEngine` skeleton: takes MIDI events, produces stereo audio. Internally just one-square-per-key, summed.
-- [ ] JUCE adapter: receives MIDI, calls engine, fills audio buffer. Plugin loads in a host.
-- [ ] CLI adapter: reads `.mid`, writes `.wav`. Used by golden tests.
-- [ ] Golden test: render `single-c4-1s.mid` → check fundamental at ~261.6 Hz, RMS in expected range.
-- [ ] Tag: `phase-1`.
+- [x] `MidiNote`, `Hertz`, `Pitch` value types with full L1 coverage.
+- [x] `MidiSource`, `AudioSink`, `Clock` ports defined.
+- [x] `SynthesisEngine` skeleton: takes MIDI events, produces stereo audio. Internally just one-square-per-key, summed.
+- [x] JUCE adapter: receives MIDI, calls engine, fills audio buffer. Plugin loads in a host.
+- [x] CLI adapter: reads `.mid`, writes `.wav`. Used by golden tests.
+- [x] Golden test: render `single-c4-1s.mid` → check fundamental at ~261.6 Hz, RMS in expected range.
+- [x] Tag: `phase-1`.
 
 ### Phase 2 — TopOctaveDivider Architecture
 
@@ -523,3 +523,4 @@ Recorded here so they don't get lost:
 | 2026-05-04 | 1.2     | Resolved §11 captures-repo-placement question: private companion repo, linked via `VP330_CAPTURES_DIR` env var. Recorded alongside Phase 0 design doc (`docs/superpowers/specs/2026-05-04-phase-0-design.md`). |
 | 2026-05-04 | 1.3     | Defer CLAP format to Phase 5 — JUCE 8.0.12 lacks native CLAP support; using the `clap-juce-extensions` shim now is unnecessary work for Phase 0's walking-skeleton goal. Phase 0 ships VST3 / AU / Standalone; Phase 5 adds CLAP alongside the GUI. §1, §2, §6, Phase 5 done-list updated. |
 | 2026-05-04 | 1.4     | Phase 0 final-review corrections, all observed during `phase-0-impl` execution: §5 tools/ tree updated to reflect what was actually delivered (`install-hooks.sh`, `golden/`, `capture/`); ab-compare and render-cli marked Phase 4+. §5 invariant on tests clarified — test helpers may link libsndfile (the isolation rule only binds `domain/`). §6 CMake project signature corrected to `project(VP330 VERSION 0.1.0 LANGUAGES C CXX)` — `C` is required by JUCE's `juce_add_plugin`. §6 vp330_tests description updated to match the build graph. |
+| 2026-05-05 | 1.5     | Phase 1 complete (skeleton engine). Hertz / MidiNote / Pitch value types; MidiSource / AudioSink / Clock ports; SynthesisEngine with naïve square-per-active-note paraphony; in-tree SMF reader in the CLI; JUCE plugin wired through the engine; golden test for single-c4-1s.mid (procedural assertion ~261.63 Hz / RMS ≈ 0.05). No new third-party dependencies; no glossary additions (MidiEvent is generic MIDI vocabulary, not VP-330 jargon, so it's unlisted by design). render_main polish pass clears the four pre-existing clang-tidy carries. |
