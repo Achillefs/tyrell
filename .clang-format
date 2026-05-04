@@ -1,0 +1,30 @@
+---
+BasedOnStyle: LLVM
+ColumnLimit: 100
+PointerAlignment: Left
+AccessModifierOffset: -2
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: false
+BreakBeforeBraces: Attach
+NamespaceIndentation: None
+SpaceAfterTemplateKeyword: true
+Standard: c++20
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex:           '^"[^/]+"'
+    Priority:        1
+  - Regex:           '^"[^"]+/'
+    Priority:        2
+  - Regex:           '^<juce_'
+    Priority:        3
+  - Regex:           '^<catch2/'
+    Priority:        4
+  - Regex:           '^<rapidcheck'
+    Priority:        4
+  - Regex:           '^<sndfile'
+    Priority:        4
+  - Regex:           '^<[a-z_]+>$'
+    Priority:        5
+  - Regex:           '.*'
+    Priority:        6
