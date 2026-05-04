@@ -6,8 +6,6 @@ Checks: >
   modernize-*,
   performance-*,
   readability-*,
-  -bugprone-pointer-arithmetic-on-polymorphic-object,
-  -cert-ctr56-cpp,
   -modernize-use-trailing-return-type,
   -readability-identifier-length,
   -readability-magic-numbers,
