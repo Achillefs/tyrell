@@ -1,0 +1,16 @@
+# Audio under tests/golden/baselines and reference-captures/ uses Git LFS.
+tests/golden/baselines/**/*.wav  filter=lfs diff=lfs merge=lfs -text
+reference-captures/**/*.wav      filter=lfs diff=lfs merge=lfs -text
+
+# Line-ending hygiene
+*.cpp        text eol=lf
+*.h          text eol=lf
+*.cmake      text eol=lf
+CMakeLists.txt text eol=lf
+*.md         text eol=lf
+*.yml        text eol=lf
+*.json       text eol=lf
+*.py         text eol=lf
+*.sh         text eol=lf
+*.wav        binary
+*.mid        binary
