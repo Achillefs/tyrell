@@ -6,6 +6,7 @@
 #include <sndfile.h>
 
 #include <algorithm>
+#include <cerrno>
 #include <charconv>
 #include <cmath>
 #include <cstdio>
@@ -26,11 +27,15 @@ struct Args {
 };
 
 bool parse_double(const char* str, double& out, const char* name) {
-  const std::string_view sv{str};
-  auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
-  // NOLINTNEXTLINE(cppcoreguidelines-init-variables) — structured binding initialises ok
-  bool ok =
-      (ec == std::errc{}) && (ptr == sv.data() + sv.size()) && std::isfinite(out) && (out > 0.0);
+  // libc++ on Apple Clang (Xcode 15.x) deletes std::from_chars(double); only the
+  // integer overloads ship there. Until macOS toolchains catch up, parse via
+  // std::strtod and accept the cert-err33-c suppression — strtod's diagnostics
+  // are reachable through end-pointer + errno, which we check below.
+  char* end = nullptr;
+  errno = 0;
+  // NOLINTNEXTLINE(cert-err33-c) — strtod's diagnostics consumed via end and errno
+  out = std::strtod(str, &end);
+  const bool ok = end != str && *end == '\0' && errno == 0 && std::isfinite(out) && out > 0.0;
   if (!ok) {
     std::fprintf(stderr, "invalid numeric value for %s: %s\n", name, str);
   }
