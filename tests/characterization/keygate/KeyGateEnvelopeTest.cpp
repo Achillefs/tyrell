@@ -20,7 +20,7 @@ std::vector<float> dc_signal(std::size_t n, float value = 1.0f) {
 } // namespace
 
 TEST_CASE("KeyGate L2: attack ramp is monotonic non-decreasing", "[keygate][L2]") {
-  KeyGate gate{kSampleRate, /*attack=*/0.005, /*release=*/0.05}; // 5 ms attack
+  KeyGate gate{kSampleRate, /*attack_seconds=*/0.005, /*release_seconds=*/0.05}; // 5 ms attack
   gate.gate_on();
   auto in = dc_signal(kSampleRate / 100); // 10 ms — covers full attack
   std::vector<float> out(in.size());
@@ -67,7 +67,8 @@ TEST_CASE("KeyGate L2: click suppression on note-on (DC input)", "[keygate][L2]"
   KeyGate gate{kSampleRate, /*attack_seconds=*/0.005, /*release_seconds=*/0.05};
   gate.gate_on();
 
-  std::vector<float> sig(240, 1.0f);
+  constexpr int attack_samples = kSampleRate * 5 / 1000; // 240 at 48 kHz
+  std::vector<float> sig(attack_samples, 1.0f);
   std::vector<float> out(sig.size());
   gate.process(sig.data(), out.data(), out.size());
 
