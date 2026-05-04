@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, ubuntu-24.04]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install libsndfile (macOS)
+        if: runner.os == 'macOS'
+        run: brew install libsndfile
+
+      - name: Install build deps (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libsndfile1-dev \
+            libasound2-dev \
+            libjack-jackd2-dev \
+            libcurl4-openssl-dev \
+            libfreetype-dev \
+            libfontconfig1-dev \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            ladspa-sdk \
+            mesa-common-dev \
+            libgl1-mesa-dev
+
+      - name: Cache FetchContent deps
+        uses: actions/cache@v4
+        with:
+          path: build/_deps
+          key: fc-${{ runner.os }}-juce8.0.12-catch3.14.0-${{ hashFiles('CMakeLists.txt') }}
+
+      - name: Configure
+        run: cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build all targets
+        run: cmake --build build --config Release
+
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure -C Release
