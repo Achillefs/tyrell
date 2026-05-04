@@ -1,0 +1,61 @@
+name: ARM cross-compile
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: arm-cross-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross-aarch64:
+    name: aarch64-linux-gnu
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Check for Elk SDK secret
+        id: check-sdk
+        run: |
+          if [ -z "${{ secrets.ELK_SDK_URL }}" ]; then
+            echo "Elk SDK URL not configured; running as no-op stub."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stop early (no SDK)
+        if: steps.check-sdk.outputs.available == 'false'
+        run: |
+          echo "::notice::Elk SDK secret not set. Configure ELK_SDK_URL repo secret to enable cross-compile."
+          exit 0
+
+      - name: Install cross toolchain
+        if: steps.check-sdk.outputs.available == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-aarch64-linux-gnu
+
+      - name: Fetch Elk SDK sysroot
+        if: steps.check-sdk.outputs.available == 'true'
+        run: |
+          curl -fSL "${{ secrets.ELK_SDK_URL }}" -o sdk.tar.gz
+          mkdir -p $HOME/elk-sdk
+          tar -xzf sdk.tar.gz -C $HOME/elk-sdk
+
+      - name: Configure (cross)
+        if: steps.check-sdk.outputs.available == 'true'
+        run: |
+          cmake -B build-arm -S . \
+            -DCMAKE_TOOLCHAIN_FILE=$HOME/elk-sdk/cmake/aarch64.cmake \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build (cross)
+        if: steps.check-sdk.outputs.available == 'true'
+        run: cmake --build build-arm --config Release

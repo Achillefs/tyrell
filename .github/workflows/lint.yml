@@ -1,0 +1,78 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-18
+      - name: Check formatting
+        run: |
+          mapfile -t files < <(find domain infrastructure tests -name '*.cpp' -o -name '*.h')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "no C++ sources yet"; exit 0
+          fi
+          clang-format-18 --dry-run -Werror "${files[@]}"
+
+  clang-tidy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang-tidy-18 \
+            libsndfile1-dev \
+            libasound2-dev libjack-jackd2-dev libcurl4-openssl-dev \
+            libfreetype-dev libfontconfig1-dev libwebkit2gtk-4.1-dev \
+            libgtk-3-dev ladspa-sdk mesa-common-dev libgl1-mesa-dev
+
+      - name: Configure (compile_commands.json)
+        run: cmake -B build -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+      - name: Determine changed files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$base...HEAD" -- '*.cpp' '*.h' || true)
+          printf '%s\n' "${files[@]}" > changed.txt
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Run clang-tidy on changed files
+        if: steps.changed.outputs.count != '0'
+        run: |
+          mapfile -t files < changed.txt
+          clang-tidy-18 -p build "${files[@]}"
+
+  domain-isolation:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify domain/ has no JUCE / sndfile / alsa includes
+        run: |
+          if grep -rE '#include[[:space:]]*<(juce_|sndfile|alsa)' domain/; then
+            echo "::error::domain/ includes a forbidden third-party header (spec §3.1)"
+            exit 1
+          fi
+          echo "OK: domain/ is isolated."

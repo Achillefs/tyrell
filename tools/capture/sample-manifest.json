@@ -1,0 +1,31 @@
+{
+  "revision": "MkII",
+  "session_date": "2026-05-04",
+  "session_name": "choir-chromatic-variant-A-ensemble-off",
+  "midi_input": "input.mid",
+  "audio_output": "output.wav",
+  "audio": {
+    "sample_rate": 48000,
+    "bit_depth": 24,
+    "channels": 2,
+    "duration_seconds": 12.5
+  },
+  "instrument_settings": {
+    "section": "choir",
+    "choir_variant": "variant-A-pending-name",
+    "male_switch": true,
+    "female_switch": false,
+    "ensemble_on": false,
+    "vibrato_rate": 0.0,
+    "vibrato_depth": 0.0,
+    "tone": 0.5,
+    "balance": 0.0
+  },
+  "signal_chain": [
+    "VP-330 MkII line out",
+    "Apollo Twin DI",
+    "Logic Pro X 24-bit capture"
+  ],
+  "room_conditions": "treated home studio, ambient noise -65 dBFS",
+  "anomalies": []
+}
