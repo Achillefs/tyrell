@@ -20,5 +20,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JUCE)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+
 add_subdirectory(domain)
 add_subdirectory(infrastructure)
