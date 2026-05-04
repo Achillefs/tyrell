@@ -52,9 +52,8 @@ TEST_CASE("KeyGate: returns to Idle after release-time samples", "[keygate]") {
   g.process(warm.data(), warm_out.data(), warm.size());
   g.gate_off();
 
-  // 50 ms @ 48 kHz = 2400 samples; add 1 to absorb FP rounding in the
-  // accumulator (the residual after 2400 subtractions of 1/2400 is ~5e-14).
-  std::vector<float> sig(2401, 1.0f), out(2401);
+  // 50 ms @ 48 kHz = 2400 samples; after exactly that many, gate is Idle.
+  std::vector<float> sig(2400, 1.0f), out(2400);
   g.process(sig.data(), out.data(), out.size());
   REQUIRE(g.state() == KeyGate::State::Idle);
 }
