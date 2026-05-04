@@ -6,7 +6,7 @@ directories. The captures themselves are **not** in this repo — set
 
 ## Layout produced
 
-```
+```text
 $VP330_CAPTURES_DIR/
 ├── README.md          # protocol summary (in the captures repo)
 ├── listening-references.md

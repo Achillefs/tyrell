@@ -70,7 +70,7 @@ JUCE GPL-3 obligations apply transitively. The plugin must be GPL-3. Do not intr
 
 The codebase is split into a domain core and adapters. **The domain core does not depend on JUCE, libsndfile, ALSA, or any other I/O library.** It depends on the C++ standard library and `<cmath>`. That's it.
 
-```
+```text
    ┌─────────────────────────────────────────────────────┐
    │                    Adapters                         │
    │  ┌─────────┐   ┌─────────────┐   ┌──────────────┐   │
@@ -155,7 +155,7 @@ When new concepts emerge during implementation, propose additions to this table 
 
 ## 5. Repository Structure
 
-```
+```text
 .
 ├── SPEC.md                         # This document.
 ├── README.md                       # Project pitch + quickstart.
@@ -291,7 +291,7 @@ Each component must specify its *contract* in test form before integration:
 
 Example contract for `BbdLine`:
 
-```
+```text
 Given:  BbdLine(sample_rate=48000)
 When:   set modulation_depth = 0
 And:    feed a 440 Hz sine at unity for 1 s

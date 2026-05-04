@@ -202,7 +202,7 @@ Exit code 0 if all sessions pass, 1 otherwise. Prints a per-session report.
 
 ### 6.4 `driver.py`
 
-```
+```bash
 python driver.py --name <slug> --midi <fixture.mid> \
   [--midi-out <port>] [--audio-in <device>] \
   [--tail-min 5.0] [--silence-thresh-db -50] [--silence-window 1.0] [--max-tail 30.0] \

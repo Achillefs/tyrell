@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-**Pre-implementation.** The repo currently contains only `docs/SPEC.md` and the license. There is no source tree, build system, or test harness yet — Phase 0 of the roadmap (Section 9 of the spec) creates them.
+**Phase 0 complete.** Source tree (`domain/`, `infrastructure/{juce,cli,elk}/`, `tests/`, `tools/`), CMake build, JUCE plugin (VST3/AU/Standalone), `vp330_render` CLI, `vp330_tests` (Catch2 + rapidcheck), CI on macOS-14 + ubuntu-24.04, lint workflow, walking-skeleton golden test, and Python capture tooling are all in place. Phase 1 begins next.
 
 `docs/SPEC.md` is the contract. It is the source of truth for architecture, terminology, scope, and process. Read it before doing non-trivial work. Sections marked **[CC]** in the spec are direct instructions to you and override anything in this file if they conflict. If implementation reveals the spec is wrong, update `docs/SPEC.md` in a dedicated commit before changing code.
 
@@ -72,4 +72,4 @@ Per spec §6 — implement these as you reach them, don't preempt:
 - `.clang-tidy` enables `bugprone-*`, `cert-*`, `cppcoreguidelines-*`, `modernize-*`, `performance-*`, `readability-*`.
 - CI: `ci.yml` (macOS-14 + ubuntu-24.04 build/test), `arm-cross.yml` (aarch64 cross-compile against Elk SDK), `lint.yml` (format check, clang-tidy on changed files, **domain-isolation grep check**).
 
-Until Phase 0 produces these, there are no commands to run — `make`/`cmake`/`ctest` will not work.
+Common commands (Phase 0 ships them): `cmake -B build -S . && cmake --build build` to build; `ctest --test-dir build --output-on-failure` to run tests; `clang-format --dry-run -Werror …` and `clang-tidy -p build …` for lint; `tools/install-hooks.sh` to install the pre-commit hook.

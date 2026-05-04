@@ -67,13 +67,13 @@ Use the deliberate flow:
    the change is intentional.
 3. Replace the baseline:
 
-   ```
+   ```bash
    cp /path/to/new/render.wav tests/golden/baselines/<fixture>.wav
    ```
 
 4. Commit with the explicit message form:
 
-   ```
+   ```bash
    git commit -m "golden: update <fixture> — <reason>"
    ```
 
