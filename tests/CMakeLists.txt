@@ -2,6 +2,7 @@ add_executable(vp330_tests)
 
 target_link_libraries(vp330_tests PRIVATE
     vp330_domain
+    vp330_cli_smf
     Catch2::Catch2WithMain
     rapidcheck
     rapidcheck_catch
@@ -10,5 +11,6 @@ target_link_libraries(vp330_tests PRIVATE
 target_compile_features(vp330_tests PRIVATE cxx_std_20)
 
 add_subdirectory(golden)
+add_subdirectory(unit)
 
 catch_discover_tests(vp330_tests)

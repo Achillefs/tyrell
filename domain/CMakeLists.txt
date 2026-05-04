@@ -1,5 +1,5 @@
 add_library(vp330_domain STATIC
-    src/stub.cpp
+    src/engine/SynthesisEngine.cpp
 )
 
 target_include_directories(vp330_domain
