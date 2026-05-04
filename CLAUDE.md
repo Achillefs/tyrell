@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this project is
 
-A C++20 / JUCE 8 digital recreation of the **Roland VP-330 MkII** (1979/1980) Vocoder Plus, shipping as a cross-format plugin (VST3/AU/CLAP) and as a standalone module on Raspberry Pi 4 / Elk Audio OS. The goal is architectural fidelity to the original (top-octave divider, paraphonic voicing, BBD ensemble) — not a generic polysynth approximation.
+A C++20 / JUCE 8 digital recreation of the **Roland VP-330 MkII** (1979/1980) Vocoder Plus, shipping as a cross-format plugin (VST3/AU; CLAP added in Phase 5) and as a standalone module on Raspberry Pi 4 / Elk Audio OS. The goal is architectural fidelity to the original (top-octave divider, paraphonic voicing, BBD ensemble) — not a generic polysynth approximation.
 
 **MkII only.** MkI is explicitly out of scope; the two revisions are audibly different and the author's reference unit is the MkII. Do not use MkI service-manual values or schematics.
 
