@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vp330.org/schemas/capture-manifest.json",
+  "title": "VP-330 capture session manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "revision",
+    "session_date",
+    "session_name",
+    "midi_input",
+    "audio_output",
+    "audio",
+    "instrument_settings",
+    "signal_chain"
+  ],
+  "properties": {
+    "revision": {
+      "type": "string",
+      "enum": ["MkII"],
+      "description": "VP-330 revision. MkI is out of scope."
+    },
+    "session_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "session_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "midi_input": {
+      "type": "string",
+      "description": "Path relative to session dir, typically input.mid."
+    },
+    "audio_output": {
+      "type": "string",
+      "description": "Path relative to session dir, typically output.wav."
+    },
+    "audio": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample_rate", "bit_depth", "channels", "duration_seconds"],
+      "properties": {
+        "sample_rate": { "type": "integer", "minimum": 48000 },
+        "bit_depth": {
+          "oneOf": [
+            { "type": "integer", "minimum": 24 },
+            { "type": "string", "enum": ["float32", "float64"] }
+          ]
+        },
+        "channels": { "type": "integer", "minimum": 1, "maximum": 2 },
+        "duration_seconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "instrument_settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "section",
+        "choir_variant",
+        "male_switch",
+        "female_switch",
+        "ensemble_on",
+        "vibrato_rate",
+        "vibrato_depth",
+        "tone",
+        "balance"
+      ],
+      "properties": {
+        "section": {
+          "type": "string",
+          "enum": ["choir", "strings", "vocoder"]
+        },
+        "choir_variant": {
+          "type": ["string", "null"],
+          "description": "Free string until ChoirVariant catalog is locked (spec §11)."
+        },
+        "male_switch": { "type": "boolean" },
+        "female_switch": { "type": "boolean" },
+        "ensemble_on": { "type": "boolean" },
+        "vibrato_rate": { "type": ["number", "null"] },
+        "vibrato_depth": { "type": ["number", "null"] },
+        "tone": { "type": ["number", "null"] },
+        "balance": { "type": ["number", "null"], "minimum": -1, "maximum": 1 }
+      }
+    },
+    "signal_chain": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "room_conditions": {
+      "type": "string"
+    },
+    "anomalies": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
