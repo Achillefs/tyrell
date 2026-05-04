@@ -6,11 +6,14 @@
 #include <sndfile.h>
 
 #include <algorithm>
+#include <charconv>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <limits>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace {
@@ -23,24 +26,52 @@ struct Args {
 };
 
 bool parse_double(const char* str, double& out, const char* name) {
-  char* end = nullptr;
-  out = std::strtod(str, &end);
-  if (end == str || *end != '\0' || !std::isfinite(out) || out <= 0.0) {
+  const std::string_view sv{str};
+  auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), out);
+  // NOLINTNEXTLINE(cppcoreguidelines-init-variables) — structured binding initialises ok
+  bool ok =
+      (ec == std::errc{}) && (ptr == sv.data() + sv.size()) && std::isfinite(out) && (out > 0.0);
+  if (!ok) {
     std::fprintf(stderr, "invalid numeric value for %s: %s\n", name, str);
-    return false;
   }
-  return true;
+  return ok;
 }
 
 bool parse_int(const char* str, int& out, const char* name) {
-  char* end = nullptr;
-  const long v = std::strtol(str, &end, 10);
-  if (end == str || *end != '\0' || v <= 0 || v > 1'000'000'000) {
+  long v = 0;
+  const std::string_view sv{str};
+  auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), v);
+  // NOLINTNEXTLINE(cppcoreguidelines-init-variables) — structured binding initialises ok
+  bool ok =
+      (ec == std::errc{}) && (ptr == sv.data() + sv.size()) && (v > 0) && (v <= 1'000'000'000);
+  if (!ok) {
     std::fprintf(stderr, "invalid integer for %s: %s\n", name, str);
     return false;
   }
   out = static_cast<int>(v);
   return true;
+}
+
+bool consume_string_arg(const char* value, std::string& field) {
+  if (value == nullptr) {
+    return false;
+  }
+  field = value;
+  return true;
+}
+
+bool consume_double_arg(const char* value, double& field, const char* flag_name) {
+  if (value == nullptr) {
+    return false;
+  }
+  return parse_double(value, field, flag_name);
+}
+
+bool consume_int_arg(const char* value, int& field, const char* flag_name) {
+  if (value == nullptr) {
+    return false;
+  }
+  return parse_int(value, field, flag_name);
 }
 
 bool parse_args(int argc, char** argv, Args& out) {
@@ -54,25 +85,23 @@ bool parse_args(int argc, char** argv, Args& out) {
       return argv[++i];
     };
     if (a == "--input") {
-      if (auto v = next("--input"))
-        out.input_midi = v;
-      else
+      if (!consume_string_arg(next("--input"), out.input_midi)) {
         return false;
+      }
     } else if (a == "--output") {
-      if (auto v = next("--output"))
-        out.output_wav = v;
-      else
+      if (!consume_string_arg(next("--output"), out.output_wav)) {
         return false;
+      }
     } else if (a == "--duration") {
-      if (auto v = next("--duration")) {
-        if (!parse_double(v, out.duration_seconds, "--duration")) return false;
-      } else
+      const auto* v = next("--duration");
+      if (!consume_double_arg(v, out.duration_seconds, "--duration")) {
         return false;
+      }
     } else if (a == "--sample-rate") {
-      if (auto v = next("--sample-rate")) {
-        if (!parse_int(v, out.sample_rate, "--sample-rate")) return false;
-      } else
+      const auto* v = next("--sample-rate");
+      if (!consume_int_arg(v, out.sample_rate, "--sample-rate")) {
         return false;
+      }
     } else {
       std::fprintf(stderr, "unknown arg: %s\n", a.c_str());
       return false;
