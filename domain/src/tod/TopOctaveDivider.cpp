@@ -12,7 +12,17 @@ TopOctaveDivider::TopOctaveDivider(Hertz master_clock,
       divider_ratios_{divider_ratios},
       sample_rate_{sample_rate} {}
 
-void TopOctaveDivider::set_master_clock_hz(Hertz hz) { master_clock_ = hz; }
+void TopOctaveDivider::set_master_clock_hz(Hertz hz) {
+  const double inv_sr = 1.0 / static_cast<double>(sample_rate_);
+  for (int pc = 0; pc < 12; ++pc) {
+    const double old_f = pitch_class_frequency(pc).value();
+    const double new_f = hz.value() / static_cast<double>(divider_ratios_[pc]);
+    const double n     = static_cast<double>(sample_count_[pc]);
+    phase_offsets_[pc] = std::fmod(phase_offsets_[pc] + n * (old_f - new_f) * inv_sr, 1.0);
+    if (phase_offsets_[pc] < 0.0) phase_offsets_[pc] += 1.0;
+  }
+  master_clock_ = hz;
+}
 
 Hertz TopOctaveDivider::pitch_class_frequency(int pitch_class) const {
   assert(pitch_class >= 0 && pitch_class < 12);
@@ -33,7 +43,8 @@ void TopOctaveDivider::render_pitch_class(int pitch_class, float* out, std::size
     ++n;
     // fmod on the integer sample count rather than += inc — eliminates per-period
     // FP drift that otherwise misses one zero-crossing per second at audio rate.
-    const double p = std::fmod(static_cast<double>(n) * freq * inv_sr, 1.0);
+    const double p_raw = std::fmod(static_cast<double>(n) * freq * inv_sr + phase_offsets_[pitch_class], 1.0);
+    const double p     = p_raw < 0.0 ? p_raw + 1.0 : p_raw;
     out[i] = (p < 0.5 ? 1.0f : -1.0f);
   }
 }

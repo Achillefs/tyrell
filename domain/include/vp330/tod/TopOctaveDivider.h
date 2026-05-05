@@ -27,6 +27,9 @@ private:
   // Per-pitch-class sample counter; phase is derived via fmod to avoid
   // accumulation error.
   std::array<uint64_t, 12> sample_count_{};
+  // Per-pitch-class phase offset (cycles) accumulated across clock changes so
+  // set_master_clock_hz() does not introduce a phase discontinuity.
+  std::array<double, 12> phase_offsets_{};
 };
 
 } // namespace vp330

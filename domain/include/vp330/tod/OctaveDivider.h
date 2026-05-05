@@ -26,6 +26,9 @@ private:
   // Per-octave sample counter; phase is derived via fmod to avoid accumulation error.
   // One independent counter per slot — interleaved render() calls must not alias.
   std::array<uint64_t, kMaxOctavesDown + 1> sample_count_{};
+  // Per-octave phase offset (cycles) accumulated across frequency changes so
+  // set_input_frequency() does not introduce a phase discontinuity.
+  std::array<double, kMaxOctavesDown + 1> phase_offsets_{};
 };
 
 } // namespace vp330
