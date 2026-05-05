@@ -33,7 +33,7 @@ The MkII Choir section works as follows:
 
 ## 3. Signal Flow
 
-```
+```text
 MIDI → SynthesisEngine
          │
          ├── Vibrato (Lfo → TOD master clock offset each render block)
@@ -44,8 +44,8 @@ MIDI → SynthesisEngine
          │     └── 49x KeyGates
          │          │
          │          ├── render_zones():
-         │          │     lower zone sum (MIDI 36–59)
-         │          │     upper zone sum (MIDI 60–84)
+         │          │     lower_8 / lower_4 (MIDI 36–59, 8′ and 4′ pitch)
+         │          │     upper_8 / upper_4 (MIDI 60–84, 8′ and 4′ pitch)
          │
          └── ChoirSection
                ├── ChoirFilterBank (lower) — 7 BpCascade chains, always running
@@ -53,10 +53,10 @@ MIDI → SynthesisEngine
                └── 4 switch booleans → weighted sums → stereo out (mono-duplicated)
 ```
 
-`SynthesisEngine` owns two scratch buffers (`lower_zone_`, `upper_zone_`) and coordinates:
-1. `vibrato_.tick()` → `keyboard_.tod().set_master_clock_hz(...)`
-2. `keyboard_.render_zones(lower_zone_, upper_zone_, frames)`
-3. `choir_.process(lower_zone_, upper_zone_, left, right, frames)`
+`SynthesisEngine` owns four scratch buffers (`lower_8_`, `lower_4_`, `upper_8_`, `upper_4_`) and coordinates:
+1. `vibrato_.tick()` → `keyboard_.set_master_clock_hz(...)`
+2. `keyboard_.render_zones(lower_8_, lower_4_, upper_8_, upper_4_, frames)`
+3. `choir_.process(lower_8_, lower_4_, upper_8_, upper_4_, left, right, frames)`
 
 The `Section` abstract base class is **deferred to Phase 7** (YAGNI — no second section yet to define the interface against).
 
@@ -148,8 +148,8 @@ L2: with `Lfo` at 5 Hz and moderate depth, the keyboard fundamental oscillates i
 |---|---|
 | `TopOctaveDivider` | Add `set_master_clock_hz(Hertz)` — updates all 12 divider step sizes immediately, no phase reset. |
 | `KeyGate` | Add `set_attack_seconds(double)` / `set_release_seconds(double)` — takes effect on next gate event; does not interrupt an in-progress ramp. |
-| `MkIIKeyboard` | Add `render_zones(float* lower, float* upper, std::size_t frames)`. Add `set_attack_seconds` / `set_release_seconds` propagating to all 49 KeyGates. Existing `render()` reimplemented as a sum of both zone buses. |
-| `SynthesisEngine` | Owns `ChoirSection` + `Vibrato` + two zone scratch buffers. Exposes `set_choir_switch`, `set_vibrato_rate`, `set_vibrato_depth`, `set_attack_seconds`, `set_release_seconds`. |
+| `MkIIKeyboard` | Add `render_zones(float* lower_8, float* lower_4, float* upper_8, float* upper_4, std::size_t frames)` — four pitched buses per zone (8′ = natural, 4′ = octave up). Add `set_attack_seconds` / `set_release_seconds` propagating to all 49 KeyGates. Existing `render()` returns 8′ only (natural pitch). |
+| `SynthesisEngine` | Owns `ChoirSection` + `Vibrato` + four zone scratch buffers (`lower_8_`, `lower_4_`, `upper_8_`, `upper_4_`). Exposes `set_choir_switch`, `set_vibrato_rate`, `set_vibrato_depth`, `set_attack_seconds`, `set_release_seconds`. |
 
 ---
 
