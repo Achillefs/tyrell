@@ -1,6 +1,8 @@
 #include "render.h"
 #include "wav_io.h"
 
+#include "vp330/tod/MkIIConstants.h"
+
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
@@ -17,16 +19,24 @@ using namespace vp330::test;
 
 namespace {
 
-// A square has two zero crossings per cycle; this returns ~f for a clean square at frequency f.
+// Measure fundamental from the time delta between first and last sign change.
+// Sub-cent precision across the keyboard's range — the naive crossings/(2*seconds)
+// formulation only resolves to ±13 ¢ at low frequencies.
 double zero_crossing_frequency(const std::vector<float>& buf, int sample_rate) {
+  std::size_t first_xing = 0;
+  std::size_t last_xing = 0;
   std::size_t crossings = 0;
   for (std::size_t i = 1; i < buf.size(); ++i) {
-    const bool prev_pos = buf[i - 1] >= 0.0f;
-    const bool curr_pos = buf[i] >= 0.0f;
-    if (prev_pos != curr_pos) ++crossings;
+    if ((buf[i - 1] >= 0.0f) != (buf[i] >= 0.0f)) {
+      if (crossings == 0) first_xing = i;
+      last_xing = i;
+      ++crossings;
+    }
   }
-  const double seconds = static_cast<double>(buf.size()) / sample_rate;
-  return static_cast<double>(crossings) / (2.0 * seconds);
+  if (crossings < 2) return 0.0;
+  const double interval_samples = static_cast<double>(last_xing - first_xing);
+  const double half_cycles = static_cast<double>(crossings - 1);
+  return (half_cycles * sample_rate) / (2.0 * interval_samples);
 }
 
 double rms(const std::vector<float>& buf) {
@@ -77,7 +87,15 @@ TEST_CASE("walking skeleton: silence renders to silence", "[golden]") {
   REQUIRE(max_abs_sample(baseline) < kTolerance);
 }
 
-TEST_CASE("golden: single C4 renders a square at ~261.63 Hz, sane RMS", "[golden]") {
+TEST_CASE("golden: single C4 renders the MkII C-divider frequency", "[golden]") {
+  // C4 comes through as TOD's C output (divider 478) divided down 4 octaves
+  // (octave_down = 8 - 4 = 4 → /16). Tight tolerance around master/N/16
+  // catches any regression in the TOD/divider math; ±0.05 Hz is well below
+  // perceptual threshold and well within the measurement precision of the
+  // interval-based zero-crossing method.
+  constexpr double kMkIIC4Hz =
+      vp330::mkii::kMasterClockHz.value() / vp330::mkii::kDividerRatios[0] / 16.0;
+
   const auto wav = render_fixture("single-c4-1s.mid", 48000, 1.0);
   REQUIRE(wav.sample_rate == 48000);
   REQUIRE(wav.channels == 2);
@@ -85,10 +103,12 @@ TEST_CASE("golden: single C4 renders a square at ~261.63 Hz, sane RMS", "[golden
 
   const auto left = left_channel(wav);
   const auto f = zero_crossing_frequency(left, wav.sample_rate);
-  INFO("estimated fundamental: " << f << " Hz");
-  REQUIRE(f == Catch::Approx(261.63).margin(2.0));
+  INFO("estimated fundamental: " << f << " Hz; expected MkII C4: " << kMkIIC4Hz);
+  REQUIRE(f == Catch::Approx(kMkIIC4Hz).margin(0.05));
 
   const auto level = rms(left);
   INFO("RMS: " << level);
+  // Slightly lower envelope-shaped RMS than Phase 1's flat square (5 ms attack
+  // at the start of a 1 s render), but still well inside the band.
   REQUIRE(level == Catch::Approx(0.05).margin(0.005));
 }
