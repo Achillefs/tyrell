@@ -32,11 +32,16 @@ TEST_CASE("ChoirSection: lower zone silence when only upper switch is on", "[cho
   std::vector<float> left(256), right(256);
   cs.process(lower.data(), lower.data(), upper.data(), upper.data(),
              left.data(), right.data(), 256);
-  float max_out = 0;
+  float max_left = 0.0f;
+  float max_right = 0.0f;
   for (auto s : left) {
-    max_out = std::max(max_out, std::abs(s));
+    max_left = std::max(max_left, std::abs(s));
   }
-  REQUIRE(max_out < 1e-6f);
+  for (auto s : right) {
+    max_right = std::max(max_right, std::abs(s));
+  }
+  REQUIRE(max_left < 1e-6f);
+  REQUIRE(max_right < 1e-6f);
 }
 
 TEST_CASE("ChoirSection: left and right outputs are equal (mono duplication)",
