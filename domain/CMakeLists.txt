@@ -7,6 +7,7 @@ add_library(vp330_domain STATIC
     src/section/BpCascade.cpp
     src/section/ChoirFilterBank.cpp
     src/section/ChoirSection.cpp
+    src/modulation/Lfo.cpp
 )
 
 target_include_directories(vp330_domain
