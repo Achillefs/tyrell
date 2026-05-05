@@ -63,3 +63,28 @@ scale across all four ChoirVariants, ensemble off and on. Suggested order:
 
 The fixture MIDIs (chromatic scale, sustained C major, etc.) live in
 `$VP330_CAPTURES_DIR/fixtures/`; create them with any MIDI tool you like.
+
+## L4: Rendering through the plugin
+
+After capturing hardware sessions, render the same MIDI through the plugin and A/B compare.
+The binary is at `build/infrastructure/cli/vp330_render` (built alongside the rest of the project).
+
+Flags:
+
+- `--input <mid>` — MIDI fixture (same file sent to the hardware)
+- `--output <wav>` — output path
+- `--duration <sec>` — render length in seconds; **must cover the full MIDI duration or later
+  notes are silently dropped**. For the 49-note chromatic fixture: 65 s.
+- `--sample-rate <hz>` — default 48000
+
+Example (chromatic fixture, from the repo root):
+
+```bash
+./build/infrastructure/cli/vp330_render \
+  --input  $VP330_CAPTURES_DIR/fixtures/chromatic-49-keys.mid \
+  --output /tmp/plugin-chromatic.wav \
+  --sample-rate 48000 \
+  --duration 65
+```
+
+Load both WAVs in a DAW or audition tool and compare pitches / timbre.

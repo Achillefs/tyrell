@@ -316,6 +316,9 @@ Procedure:
 
 1. Pick a session from `reference-captures/sessions/`.
 2. Render the same MIDI through the plugin with documented settings.
+   Binary: `build/infrastructure/cli/vp330_render --input <mid> --output <wav> --duration <sec> --sample-rate 48000`.
+   **Always pass `--duration` long enough to cover the full MIDI; events beyond the render window are silently dropped.**
+   For the 49-note chromatic fixture the required duration is 65 s.
 3. Compute spectral and envelope similarity metrics.
 4. Output a report (HTML or markdown) with metric values and waveform/spectrogram overlays.
 5. Author listens, A/Bs, decides what's acceptable for the current phase.
