@@ -1,5 +1,6 @@
 #pragma once
 
+#include "vp330/keyboard/MkIIKeyboard.h"
 #include "vp330/note/MidiNote.h"
 
 #include <array>
@@ -22,8 +23,10 @@ public:
 
 private:
   int sample_rate_;
-  std::array<bool, 128> active_{};
-  std::array<double, 128> phase_{};
+  MkIIKeyboard keyboard_;
+  // Tracks logical hold state — distinct from KeyGate's audible state, which
+  // can still be Releasing after note_off.
+  std::array<bool, 128> note_held_{};
 };
 
 } // namespace vp330
