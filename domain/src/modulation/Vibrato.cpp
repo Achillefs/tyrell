@@ -16,9 +16,11 @@ void Vibrato::set_depth(float d) {
 }
 
 Hertz Vibrato::tick(std::size_t frames) {
+  const float lfo_value = lfo_.value();
   lfo_.advance(static_cast<int>(frames));
   return Hertz{mkii::kMasterClockHz.value() +
-               (static_cast<double>(lfo_.value()) * mkii::kVibratoMaxClockOffsetHz)};
+               (static_cast<double>(lfo_value) * mkii::kVibratoMaxClockOffsetHz)};
+}
 }
 
 } // namespace vp330
