@@ -6,6 +6,7 @@ add_library(vp330_domain STATIC
     src/keyboard/MkIIKeyboard.cpp
     src/section/BpCascade.cpp
     src/section/ChoirFilterBank.cpp
+    src/section/ChoirSection.cpp
 )
 
 target_include_directories(vp330_domain
