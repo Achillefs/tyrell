@@ -25,8 +25,8 @@ public:
 
   // Split render: four buffers for lower/upper × 8′/4′ pitch.
   // 8′ = natural pitch (octave_down stages); 4′ = one octave up (octave_down−1).
-  void render_zones(float* lower_8, float* lower_4,
-                    float* upper_8, float* upper_4, std::size_t frames);
+  void render_zones(float* lower_8, float* lower_4, float* upper_8, float* upper_4,
+                    std::size_t frames);
 
   void set_master_clock_hz(Hertz hz);
   void set_attack_seconds(double seconds);
@@ -48,7 +48,7 @@ private:
   // 49 KeyGates indexed by (note - kKeyboardLowestNote).
   std::vector<KeyGate> keygates_;
   // Scratch buffers reused across render calls to avoid per-block allocation.
-  std::vector<float> scratch_8_, scratch_4_, gains_;   // per-key in render_zones()
+  std::vector<float> scratch_8_, scratch_4_, gains_;         // per-key in render_zones()
   std::vector<float> zone_l8_, zone_l4_, zone_u8_, zone_u4_; // owned by render()
 };
 

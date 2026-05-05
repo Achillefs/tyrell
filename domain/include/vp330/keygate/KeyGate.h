@@ -29,12 +29,12 @@ public:
 private:
   void advance_one_sample();
 
-  int sample_rate_;          // stored for set_*_seconds()
-  int attack_samples_;       // total samples in Attacking phase
-  int release_samples_;      // total samples in Releasing phase
+  int sample_rate_;     // stored for set_*_seconds()
+  int attack_samples_;  // total samples in Attacking phase
+  int release_samples_; // total samples in Releasing phase
   State state_ = State::Idle;
-  double envelope_ = 0.0;    // current 0..1 envelope amplitude
-  int phase_index_ = 0;      // sample index within current Attacking/Releasing run
+  double envelope_ = 0.0; // current 0..1 envelope amplitude
+  int phase_index_ = 0;   // sample index within current Attacking/Releasing run
 };
 
 } // namespace vp330

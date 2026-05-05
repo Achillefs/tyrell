@@ -16,3 +16,4 @@ target_include_directories(vp330_domain
 )
 
 target_compile_features(vp330_domain PUBLIC cxx_std_20)
+set_target_properties(vp330_domain PROPERTIES POSITION_INDEPENDENT_CODE ON)
