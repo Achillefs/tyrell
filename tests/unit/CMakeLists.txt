@@ -16,4 +16,5 @@ target_sources(vp330_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/keygate/KeyGateTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keyboard/MkIIKeyboardTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/keyboard/MkIIKeyboardTuningTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/section/BpCascadeTest.cpp
 )

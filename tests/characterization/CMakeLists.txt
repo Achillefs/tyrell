@@ -7,4 +7,5 @@ target_include_directories(vp330_tests PRIVATE
 
 target_sources(vp330_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/keygate/KeyGateEnvelopeTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/section/BpCascadeCharTest.cpp
 )
