@@ -13,8 +13,17 @@ int samples_for(double seconds, int sample_rate) {
 } // namespace
 
 KeyGate::KeyGate(int sample_rate, double attack_seconds, double release_seconds)
-    : attack_samples_{samples_for(attack_seconds, sample_rate)},
+    : sample_rate_{sample_rate},
+      attack_samples_{samples_for(attack_seconds, sample_rate)},
       release_samples_{samples_for(release_seconds, sample_rate)} {}
+
+void KeyGate::set_attack_seconds(double seconds) {
+  attack_samples_ = samples_for(seconds, sample_rate_);
+}
+
+void KeyGate::set_release_seconds(double seconds) {
+  release_samples_ = samples_for(seconds, sample_rate_);
+}
 
 void KeyGate::gate_on() {
   if (state_ == State::Idle || state_ == State::Releasing) {

@@ -75,3 +75,31 @@ TEST_CASE("KeyGate: idle output is zero regardless of input", "[keygate]") {
   g.process(sig.data(), out.data(), out.size());
   for (auto s : out) REQUIRE(s == 0.0f);
 }
+
+TEST_CASE("KeyGate: set_attack_seconds takes effect on next gate_on", "[keygate][L1]") {
+  KeyGate gate{48000, /*attack=*/0.001, /*release=*/0.05}; // 1 ms = 48 samples
+
+  gate.set_attack_seconds(0.002); // 2 ms = 96 samples
+  gate.gate_on();
+
+  std::vector<float> sig(48, 1.0f), out(48);
+  gate.process(sig.data(), out.data(), 48);
+  REQUIRE(gate.state() == KeyGate::State::Attacking); // not yet done at 48 samples
+
+  gate.process(sig.data(), out.data(), 48);
+  REQUIRE(gate.state() == KeyGate::State::Sustain); // done at 96 samples
+}
+
+TEST_CASE("KeyGate: set_release_seconds takes effect on next gate_off", "[keygate][L1]") {
+  KeyGate gate{48000, 0.001, /*release=*/0.05}; // 50 ms = 2400 samples
+  gate.gate_on();
+  std::vector<float> warm(48, 1.f), wo(48);
+  gate.process(warm.data(), wo.data(), 48);
+
+  gate.set_release_seconds(0.01); // 10 ms = 480 samples
+  gate.gate_off();
+
+  std::vector<float> sig(480, 1.f), out(480);
+  gate.process(sig.data(), out.data(), 480);
+  REQUIRE(gate.state() == KeyGate::State::Idle);
+}
