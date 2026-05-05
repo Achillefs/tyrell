@@ -6,9 +6,13 @@ namespace vp330 {
 
 // Pair of cascaded 2nd-order bandpass biquad filters (4th-order total).
 // Uses Audio EQ Cookbook constant-0-dB-peak-gain BP form.
+// `gain` is a post-cascade scalar; set > 1 to compensate for the attenuation
+// inherent in cascading two BPs with slightly-offset centres (hardware
+// Deliyannis cells have ~+39 dB peak gain each, net ~+10 dB at the bus).
 class BpCascade {
 public:
-  BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate);
+  BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate,
+            float gain = 1.f);
 
   void process(const float* in, float* out, std::size_t frames);
   void reset();
@@ -24,6 +28,7 @@ private:
   static Stage make_stage(float f0, float q, int sample_rate);
 
   Stage stage1_, stage2_;
+  float gain_;
 };
 
 } // namespace vp330

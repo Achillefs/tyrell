@@ -20,9 +20,11 @@ BpCascade::Stage BpCascade::make_stage(float f0, float q, int sample_rate) {
   };
 }
 
-BpCascade::BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate)
+BpCascade::BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate,
+                     float gain)
     : stage1_{make_stage(f0_1, q1, sample_rate)},
-      stage2_{make_stage(f0_2, q2, sample_rate)} {}
+      stage2_{make_stage(f0_2, q2, sample_rate)},
+      gain_{gain} {}
 
 float BpCascade::Stage::tick(float x) noexcept {
   const float y = (b0 * x) + (b2 * x2) - (a1 * y1) - (a2 * y2);
@@ -35,7 +37,7 @@ float BpCascade::Stage::tick(float x) noexcept {
 
 void BpCascade::process(const float* in, float* out, std::size_t frames) {
   for (std::size_t i = 0; i < frames; ++i) {
-    out[i] = stage2_.tick(stage1_.tick(in[i]));
+    out[i] = gain_ * stage2_.tick(stage1_.tick(in[i]));
   }
 }
 

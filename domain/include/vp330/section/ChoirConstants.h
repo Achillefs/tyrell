@@ -11,6 +11,13 @@ namespace vp330::mkii {
 struct BpCascadeParams {
   float f0_1, q1; // first 2-pole stage
   float f0_2, q2; // second 2-pole stage
+  // Post-cascade scalar. Target is 8.72× (+18.8 dB) to match the hardware's
+  // ~+10 dB net Deliyannis gain at Fc, but without the HV-330 compander
+  // (Phase 4) the transients clip at that level. 2.7× is the maximum that
+  // keeps a single-note output below 0 dBFS with kPerKeyGain=0.05; it places
+  // the formant peak at ~0 dB (passes formant harmonics at unity, attenuates
+  // everything else). Raise to 8.72 once the compander is implemented.
+  float gain = 2.7f;
 };
 
 // clang-format off
