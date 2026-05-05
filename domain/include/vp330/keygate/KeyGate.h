@@ -22,6 +22,10 @@ public:
   // state. `in` and `out` may alias.
   void process(const float* in, float* out, std::size_t frames);
 
+  // Write per-sample envelope gains to `gains` while advancing state.
+  // Use when you need to apply the same envelope to multiple signals.
+  void fill_envelope(float* gains, std::size_t frames);
+
 private:
   void advance_one_sample();
 

@@ -31,12 +31,16 @@ void SynthesisEngine::set_attack_seconds(double s)  { keyboard_.set_attack_secon
 void SynthesisEngine::set_release_seconds(double s) { keyboard_.set_release_seconds(s); }
 
 void SynthesisEngine::render(float* left, float* right, std::size_t frames) {
-  if (lower_zone_.size() < frames) lower_zone_.resize(frames);
-  if (upper_zone_.size() < frames) upper_zone_.resize(frames);
+  if (lower_8_.size() < frames) lower_8_.resize(frames);
+  if (lower_4_.size() < frames) lower_4_.resize(frames);
+  if (upper_8_.size() < frames) upper_8_.resize(frames);
+  if (upper_4_.size() < frames) upper_4_.resize(frames);
 
   keyboard_.set_master_clock_hz(vibrato_.tick(frames));
-  keyboard_.render_zones(lower_zone_.data(), upper_zone_.data(), frames);
-  choir_.process(lower_zone_.data(), upper_zone_.data(), left, right, frames);
+  keyboard_.render_zones(lower_8_.data(), lower_4_.data(),
+                         upper_8_.data(), upper_4_.data(), frames);
+  choir_.process(lower_8_.data(), lower_4_.data(),
+                 upper_8_.data(), upper_4_.data(), left, right, frames);
 }
 
 } // namespace vp330

@@ -85,29 +85,37 @@ void MkIIKeyboard::set_release_seconds(double s) {
     g.set_release_seconds(s);
 }
 
-void MkIIKeyboard::render_zones(float* lower, float* upper, std::size_t frames) {
-  std::fill_n(lower, frames, 0.f);
-  std::fill_n(upper, frames, 0.f);
-  std::vector<float> scratch(frames), gated(frames);
+void MkIIKeyboard::render_zones(float* lower_8, float* lower_4,
+                                 float* upper_8, float* upper_4,
+                                 std::size_t frames) {
+  std::fill_n(lower_8, frames, 0.f);
+  std::fill_n(lower_4, frames, 0.f);
+  std::fill_n(upper_8, frames, 0.f);
+  std::fill_n(upper_4, frames, 0.f);
+  std::vector<float> scratch_8(frames), scratch_4(frames), gains(frames);
 
   for (int i = 0; i < mkii::kKeyCount; ++i) {
     if (keygates_[i].state() == KeyGate::State::Idle) continue;
     const auto note = MidiNote{mkii::kKeyboardLowestNote.value() + i};
-    const auto t = topology_for(note);
-    octave_dividers_[t->pitch_class].render(t->octave_down, scratch.data(), frames);
-    keygates_[i].process(scratch.data(), gated.data(), frames);
+    const auto t    = topology_for(note);
+    octave_dividers_[t->pitch_class].render(t->octave_down,     scratch_8.data(), frames);
+    octave_dividers_[t->pitch_class].render(t->octave_down - 1, scratch_4.data(), frames);
+    keygates_[i].fill_envelope(gains.data(), frames);
     const int midi = mkii::kKeyboardLowestNote.value() + i;
-    float* zone = (midi < mkii::kSplitNote.value()) ? lower : upper;
-    for (std::size_t f = 0; f < frames; ++f)
-      zone[f] += gated[f] * kPerKeyGain;
+    float* buf_8   = (midi < mkii::kSplitNote.value()) ? lower_8 : upper_8;
+    float* buf_4   = (midi < mkii::kSplitNote.value()) ? lower_4 : upper_4;
+    for (std::size_t f = 0; f < frames; ++f) {
+      buf_8[f] += scratch_8[f] * gains[f] * kPerKeyGain;
+      buf_4[f] += scratch_4[f] * gains[f] * kPerKeyGain;
+    }
   }
 }
 
 void MkIIKeyboard::render(float* out, std::size_t frames) {
-  std::vector<float> lower(frames), upper(frames);
-  render_zones(lower.data(), upper.data(), frames);
+  std::vector<float> l8(frames), l4(frames), u8(frames), u4(frames);
+  render_zones(l8.data(), l4.data(), u8.data(), u4.data(), frames);
   for (std::size_t i = 0; i < frames; ++i)
-    out[i] = lower[i] + upper[i];
+    out[i] = l8[i] + u8[i]; // 8' only: natural pitch of the pressed keys
 }
 
 } // namespace vp330

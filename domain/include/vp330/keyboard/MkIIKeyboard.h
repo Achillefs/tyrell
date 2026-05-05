@@ -23,8 +23,10 @@ public:
   // Caller duplicates to stereo. `out` is overwritten.
   void render(float* out, std::size_t frames);
 
-  // Split render: lower zone (MIDI < 60) and upper zone (MIDI >= 60).
-  void render_zones(float* lower, float* upper, std::size_t frames);
+  // Split render: four buffers for lower/upper × 8′/4′ pitch.
+  // 8′ = natural pitch (octave_down stages); 4′ = one octave up (octave_down−1).
+  void render_zones(float* lower_8, float* lower_4,
+                    float* upper_8, float* upper_4, std::size_t frames);
 
   void set_master_clock_hz(Hertz hz);
   void set_attack_seconds(double seconds);

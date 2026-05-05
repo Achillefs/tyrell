@@ -13,7 +13,8 @@ TEST_CASE("ChoirSection: all switches off → silence", "[choir_section][L1]") {
   ChoirSection cs{48000};
   std::vector<float> lower(256, 0.5f), upper(256, 0.5f);
   std::vector<float> left(256), right(256);
-  cs.process(lower.data(), upper.data(), left.data(), right.data(), 256);
+  cs.process(lower.data(), lower.data(), upper.data(), upper.data(),
+             left.data(), right.data(), 256);
   for (auto s : left) {
     REQUIRE(s == 0.0f);
   }
@@ -28,7 +29,8 @@ TEST_CASE("ChoirSection: lower zone silence when only upper switch is on", "[cho
   // Feed signal in lower zone only, upper zone silent.
   std::vector<float> lower(256, 0.5f), upper(256, 0.0f);
   std::vector<float> left(256), right(256);
-  cs.process(lower.data(), upper.data(), left.data(), right.data(), 256);
+  cs.process(lower.data(), lower.data(), upper.data(), upper.data(),
+             left.data(), right.data(), 256);
   float max_out = 0;
   for (auto s : left) {
     max_out = std::max(max_out, std::abs(s));
@@ -44,7 +46,8 @@ TEST_CASE("ChoirSection: left and right outputs are equal (mono duplication)",
   std::vector<float> left(256), right(256);
   // Settle the filter first.
   for (int i = 0; i < 10; ++i) {
-    cs.process(lower.data(), upper.data(), left.data(), right.data(), 256);
+    cs.process(lower.data(), lower.data(), upper.data(), upper.data(),
+               left.data(), right.data(), 256);
   }
   for (std::size_t i = 0; i < 256; ++i) {
     REQUIRE(left[i] == right[i]);
