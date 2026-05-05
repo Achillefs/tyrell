@@ -1,5 +1,7 @@
 #include "vp330/keyboard/MkIIKeyboard.h"
 
+#include "vp330/tod/MkIIConstants.h"
+
 #include <algorithm>
 #include <vector>
 
