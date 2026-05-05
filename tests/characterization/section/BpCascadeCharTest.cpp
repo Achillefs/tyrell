@@ -35,20 +35,20 @@ TEST_CASE("BpCascade L2: passes signal near centre, rejects extremes", "[bp_casc
   BpCascade bp{175.f, 6.79f, 216.f, 6.83f, 48000};
 
   const float rms_centre = rms_at(bp, 190.f);
-  const float rms_lo     = rms_at(bp, 30.f);
-  const float rms_hi     = rms_at(bp, 5000.f);
+  const float rms_lo = rms_at(bp, 30.f);
+  const float rms_hi = rms_at(bp, 5000.f);
 
   // At least 10 dB more gain in the passband than at the extremes.
-  REQUIRE(rms_centre > rms_lo  * 3.f);
-  REQUIRE(rms_centre > rms_hi  * 3.f);
+  REQUIRE(rms_centre > rms_lo * 3.f);
+  REQUIRE(rms_centre > rms_hi * 3.f);
 }
 
 TEST_CASE("BpCascade L2: higher-frequency filter (F5) centred around 2700 Hz", "[bp_cascade][L2]") {
   BpCascade bp{2532.f, 6.83f, 3098.f, 6.83f, 48000};
 
   const float rms_centre = rms_at(bp, 2700.f);
-  const float rms_lo     = rms_at(bp, 400.f);
-  const float rms_hi     = rms_at(bp, 12000.f);
+  const float rms_lo = rms_at(bp, 400.f);
+  const float rms_hi = rms_at(bp, 12000.f);
 
   REQUIRE(rms_centre > rms_lo * 3.f);
   REQUIRE(rms_centre > rms_hi * 3.f);

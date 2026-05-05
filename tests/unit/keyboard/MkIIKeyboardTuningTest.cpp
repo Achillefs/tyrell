@@ -54,9 +54,8 @@ double expected_tod_frequency(MidiNote n) {
   const int pitch_class = absolute_midi % 12;
   const int octave = absolute_midi / 12 - 1;
   const int octave_down = 8 - octave;
-  const double tod_freq =
-      vp330::mkii::kMasterClockHz.value() /
-      static_cast<double>(vp330::mkii::kDividerRatios[pitch_class]);
+  const double tod_freq = vp330::mkii::kMasterClockHz.value() /
+                          static_cast<double>(vp330::mkii::kDividerRatios[pitch_class]);
   return tod_freq / static_cast<double>(1 << octave_down);
 }
 
@@ -90,8 +89,7 @@ TEST_CASE("MkIIKeyboard L2: every key tunes within ±1.5 cents of equal temperam
     const double measured = measure_frequency_hz(kb, note);
     const double et = vp330::Pitch::from_midi_note(note).to_hertz().value();
     const double cents = cents_deviation(measured, et);
-    INFO("key " << note.value() << " measured " << measured << " ET " << et
-                << " cents " << cents);
+    INFO("key " << note.value() << " measured " << measured << " ET " << et << " cents " << cents);
     REQUIRE(std::abs(cents) < 1.5);
   }
 }

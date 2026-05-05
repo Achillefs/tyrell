@@ -72,7 +72,8 @@ TEST_CASE("OctaveDivider: set_input_frequency changes output zero-crossing rate"
   REQUIRE(crossings == 8000); // 4000 Hz × 2 crossings/cycle × 1 s
 }
 
-TEST_CASE("OctaveDivider: each octave maintains continuous phase across calls", "[octave-divider]") {
+TEST_CASE("OctaveDivider: each octave maintains continuous phase across calls",
+          "[octave-divider]") {
   OctaveDivider div{Hertz{2000.0}, 48000};
   std::vector<float> a(1024), b(1024);
   div.render(0, a.data(), a.size());

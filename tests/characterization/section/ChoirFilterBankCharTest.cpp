@@ -29,8 +29,7 @@ float filter_rms(ChoirFilterBank& bank, int idx, float freq) {
 
 } // namespace
 
-TEST_CASE("ChoirFilterBank L2: F2 (559/671 Hz) passes 600 Hz, rejects 100 Hz",
-          "[choir_fb][L2]") {
+TEST_CASE("ChoirFilterBank L2: F2 (559/671 Hz) passes 600 Hz, rejects 100 Hz", "[choir_fb][L2]") {
   ChoirFilterBank bank{48000};
   REQUIRE(filter_rms(bank, 2, 600.f) > filter_rms(bank, 2, 100.f) * 3.f);
 }
@@ -41,8 +40,7 @@ TEST_CASE("ChoirFilterBank L2: F5 (2532/3098 Hz) passes 2700 Hz, rejects 500 Hz"
   REQUIRE(filter_rms(bank, 5, 2700.f) > filter_rms(bank, 5, 500.f) * 3.f);
 }
 
-TEST_CASE("ChoirFilterBank L2: F0 (175/216 Hz) passes 190 Hz, rejects 2000 Hz",
-          "[choir_fb][L2]") {
+TEST_CASE("ChoirFilterBank L2: F0 (175/216 Hz) passes 190 Hz, rejects 2000 Hz", "[choir_fb][L2]") {
   ChoirFilterBank bank{48000};
   REQUIRE(filter_rms(bank, 0, 190.f) > filter_rms(bank, 0, 2000.f) * 3.f);
 }

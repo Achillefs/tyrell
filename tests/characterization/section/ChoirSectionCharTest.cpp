@@ -32,14 +32,12 @@ TEST_CASE("ChoirSection L2: UpperMale8 produces non-silent output from upper zon
   for (int i = 0; i < n; ++i) {
     upper[i] = (i % 184 < 92) ? 0.05f : -0.05f;
   }
-  cs.process(lower.data(), lower.data(), upper.data(), upper.data(),
-             left.data(), right.data(), n);
+  cs.process(lower.data(), lower.data(), upper.data(), upper.data(), left.data(), right.data(), n);
 
   REQUIRE(rms(left, n / 2) > 1e-5);
 }
 
-TEST_CASE("ChoirSection L2: both lower switches sum louder than one alone",
-          "[choir_section][L2]") {
+TEST_CASE("ChoirSection L2: both lower switches sum louder than one alone", "[choir_section][L2]") {
   ChoirSection cs1{48000};
   ChoirSection cs2{48000};
   cs1.set_switch(ChoirSwitch::LowerMale8, true);
@@ -53,10 +51,8 @@ TEST_CASE("ChoirSection L2: both lower switches sum louder than one alone",
     lower[i] = (i % 100 < 50) ? 0.05f : -0.05f;
   }
 
-  cs1.process(lower.data(), lower.data(), upper.data(), upper.data(),
-              l1.data(), r1.data(), n);
-  cs2.process(lower.data(), lower.data(), upper.data(), upper.data(),
-              l2.data(), r2.data(), n);
+  cs1.process(lower.data(), lower.data(), upper.data(), upper.data(), l1.data(), r1.data(), n);
+  cs2.process(lower.data(), lower.data(), upper.data(), upper.data(), l2.data(), r2.data(), n);
 
   REQUIRE(rms(l2, n / 2) > rms(l1, n / 2));
 }

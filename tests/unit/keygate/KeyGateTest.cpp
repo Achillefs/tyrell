@@ -1,6 +1,7 @@
 #include "vp330/keygate/KeyGate.h"
 
 #include <catch2/catch_test_macros.hpp>
+
 #include <vector>
 
 using vp330::KeyGate;
@@ -73,7 +74,8 @@ TEST_CASE("KeyGate: idle output is zero regardless of input", "[keygate]") {
   auto g = make_gate();
   std::vector<float> sig(64, 1.0f), out(64, 999.0f);
   g.process(sig.data(), out.data(), out.size());
-  for (auto s : out) REQUIRE(s == 0.0f);
+  for (auto s : out)
+    REQUIRE(s == 0.0f);
 }
 
 TEST_CASE("KeyGate: set_attack_seconds takes effect on next gate_on", "[keygate][L1]") {

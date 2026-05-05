@@ -1,4 +1,5 @@
 #include "vp330/modulation/Lfo.h"
+
 #include "vp330/values/Hertz.h"
 
 #include <catch2/catch_approx.hpp>
@@ -23,7 +24,7 @@ TEST_CASE("Lfo: output bounded to [-1, 1] at unity depth", "[lfo][L1]") {
   for (int i = 0; i < 48000; ++i) {
     const float s = lfo.tick();
     REQUIRE(s >= -1.0f);
-    REQUIRE(s <=  1.0f);
+    REQUIRE(s <= 1.0f);
   }
 }
 

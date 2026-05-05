@@ -14,7 +14,7 @@ TEST_CASE("Vibrato L2: clock oscillates at the set LFO rate", "[vibrato][L2]") {
   v.set_depth(0.5f);
 
   // Sample once per 256-sample block over ~1 second (187 blocks).
-  const int block    = 256;
+  const int block = 256;
   const int n_blocks = 48000 / block;
   std::vector<double> clocks(n_blocks);
   for (int i = 0; i < n_blocks; ++i) {
@@ -31,7 +31,7 @@ TEST_CASE("Vibrato L2: clock oscillates at the set LFO rate", "[vibrato][L2]") {
   int crossings = 0;
   for (int i = 1; i < n_blocks; ++i) {
     const bool prev = (clocks[i - 1] - mean) >= 0;
-    const bool curr = (clocks[i]     - mean) >= 0;
+    const bool curr = (clocks[i] - mean) >= 0;
     if (prev != curr) {
       ++crossings;
     }

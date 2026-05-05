@@ -1,5 +1,6 @@
-#include "vp330/section/ChoirConstants.h"
 #include "vp330/section/ChoirFilterBank.h"
+
+#include "vp330/section/ChoirConstants.h"
 #include "vp330/section/ChoirSwitch.h"
 
 #include <catch2/catch_approx.hpp>
@@ -10,7 +11,8 @@
 using vp330::ChoirSwitch;
 using namespace vp330::mkii;
 
-TEST_CASE("ChoirFilterBank: LowerMale8 uses filters 0,2,3,5 with correct weights", "[choir_fb][L1]") {
+TEST_CASE("ChoirFilterBank: LowerMale8 uses filters 0,2,3,5 with correct weights",
+          "[choir_fb][L1]") {
   const auto& v = kVoiceWeights[static_cast<int>(ChoirSwitch::LowerMale8)];
   REQUIRE(v.filters == std::array<int, 4>{0, 2, 3, 5});
   REQUIRE(v.weights[0] == Catch::Approx(0.3125f));
@@ -19,13 +21,15 @@ TEST_CASE("ChoirFilterBank: LowerMale8 uses filters 0,2,3,5 with correct weights
   REQUIRE(v.weights[3] == Catch::Approx(0.3125f));
 }
 
-TEST_CASE("ChoirFilterBank: LowerMale4 uses filters 1,2,3,5 with correct weights", "[choir_fb][L1]") {
+TEST_CASE("ChoirFilterBank: LowerMale4 uses filters 1,2,3,5 with correct weights",
+          "[choir_fb][L1]") {
   const auto& v = kVoiceWeights[static_cast<int>(ChoirSwitch::LowerMale4)];
   REQUIRE(v.filters == std::array<int, 4>{1, 2, 3, 5});
   REQUIRE(v.weights[0] == Catch::Approx(0.125f));
 }
 
-TEST_CASE("ChoirFilterBank: UpperMale8 uses filters 1,2,3,5 with correct weights", "[choir_fb][L1]") {
+TEST_CASE("ChoirFilterBank: UpperMale8 uses filters 1,2,3,5 with correct weights",
+          "[choir_fb][L1]") {
   const auto& v = kVoiceWeights[static_cast<int>(ChoirSwitch::UpperMale8)];
   REQUIRE(v.filters == std::array<int, 4>{1, 2, 3, 5});
   REQUIRE(v.weights[0] == Catch::Approx(0.1875f));

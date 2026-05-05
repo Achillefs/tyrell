@@ -34,8 +34,8 @@ public:
 private:
   int sample_rate_;
   MkIIKeyboard keyboard_;
-  ChoirSection  choir_;
-  Vibrato       vibrato_;
+  ChoirSection choir_;
+  Vibrato vibrato_;
   std::vector<float> lower_8_, lower_4_, upper_8_, upper_4_;
   // Tracks logical hold state — distinct from KeyGate's audible state, which
   // can still be Releasing after note_off.

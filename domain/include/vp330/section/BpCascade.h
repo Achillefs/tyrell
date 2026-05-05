@@ -11,15 +11,14 @@ namespace vp330 {
 // Deliyannis cells have ~+39 dB peak gain each, net ~+10 dB at the bus).
 class BpCascade {
 public:
-  BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate,
-            float gain = 1.f);
+  BpCascade(float f0_1, float q1, float f0_2, float q2, int sample_rate, float gain = 1.f);
 
   void process(const float* in, float* out, std::size_t frames);
   void reset();
 
 private:
   struct Stage {
-    float b0, b2, a1, a2;             // b1 = 0 for BP
+    float b0, b2, a1, a2; // b1 = 0 for BP
     float x1 = 0, x2 = 0, y1 = 0, y2 = 0;
     float tick(float x) noexcept;
     void reset() noexcept { x1 = x2 = y1 = y2 = 0.f; }
