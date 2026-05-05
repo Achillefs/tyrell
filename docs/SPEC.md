@@ -1,7 +1,7 @@
 # VP-330 Recreation — Project Specification
 
-**Version:** 1.6
-**Status:** Phase 2 implementation complete; awaiting L4 listening checkpoint and `phase-2` tag
+**Version:** 1.7
+**Status:** Phase 2 complete. Phase 3 planning next.
 **License:** GPL-3.0 (driven by JUCE GPL usage)
 **Hardware Reference:** Roland VP-330 **MkII**
 
@@ -412,8 +412,8 @@ Deliverables:
 - [x] `KeyGate` with attack/release. L1 covers state machine; L2 covers envelope shape and click suppression. _Integer phase counter rather than FP accumulator — transitions land on exact sample counts._
 - [x] `SynthesisEngine` rewired to use TOD + KeyGates instead of the Phase 1 naïve oscillators. _Now owns a `MkIIKeyboard` which composes the TOD, 12 OctaveDividers, and 49 KeyGates with the MkIIConstants._
 - [x] L2: tuning across the full keyboard. _Two contracts: every key matches `master/(N · 2^k)` within ±0.1 ¢ (topology), and every key tunes within ±1.5 ¢ of ET (envelope; max +1.35 ¢ at A# is intrinsic to integer top-octave division). Per-pitch-class deviation table documented in `docs/tod-intrinsic-detuning.md`._
-- [ ] **L4 checkpoint:** sounds like a cheap organ. That's correct. A/B vs. capture #1 should show same fundamentals, very different timbre.
-- [ ] Tag: `phase-2`.
+- [x] **L4 checkpoint:** sounds like a cheap organ. That's correct. A/B vs. capture #1 should show same fundamentals, very different timbre.
+- [x] Tag: `phase-2`.
 
 ### Phase 3 — Choir Section
 
@@ -528,3 +528,4 @@ Recorded here so they don't get lost:
 | 2026-05-04 | 1.4     | Phase 0 final-review corrections, all observed during `phase-0-impl` execution: §5 tools/ tree updated to reflect what was actually delivered (`install-hooks.sh`, `golden/`, `capture/`); ab-compare and render-cli marked Phase 4+. §5 invariant on tests clarified — test helpers may link libsndfile (the isolation rule only binds `domain/`). §6 CMake project signature corrected to `project(VP330 VERSION 0.1.0 LANGUAGES C CXX)` — `C` is required by JUCE's `juce_add_plugin`. §6 vp330_tests description updated to match the build graph. |
 | 2026-05-05 | 1.5     | Phase 1 complete (skeleton engine). Hertz / MidiNote / Pitch value types; MidiSource / AudioSink / Clock ports; SynthesisEngine with naïve square-per-active-note paraphony; in-tree SMF reader in the CLI; JUCE plugin wired through the engine; golden test for single-c4-1s.mid (procedural assertion ~261.63 Hz / RMS ≈ 0.05). No new third-party dependencies; no glossary additions (MidiEvent is generic MIDI vocabulary, not VP-330 jargon, so it's unlisted by design). render_main polish pass clears the four pre-existing clang-tidy carries. |
 | 2026-05-05 | 1.6     | Phase 2 implementation landed (TOD architecture). New domain components: `TopOctaveDivider`, `OctaveDivider`, `KeyGate`, `MkIIKeyboard`. New constants header `MkIIConstants.h` pinning the AY-3-0214 nominal master clock (2.000272 MHz) and canonical divider series — the chip is identified in the service-manual semiconductor list (page 5) and the keyboard is confirmed 49 keys C2..C6 (MIDI 36..84). New L2 (characterization) test target with KeyGate envelope + keyboard tuning contracts; tighter golden assertion on single-c4 (±0.05 Hz around the actual TOD frequency). New doc `docs/tod-intrinsic-detuning.md` enumerating per-pitch-class deviations from ET (max ±1.35 ¢, kept as VP-330 character). §11 partially resolved: TOD axis pinned; ChoirFilterBank coefficients, ChoirVariant mapping, ensemble LFO, vibrato, and attack/release curves remain deferred. L4 listening checkpoint and `phase-2` tag pending the author's hardware A/B session. |
+| 2026-05-05 | 1.7     | Phase 2 closed. L4 checkpoint passed: author A/B'd plugin render against hardware choir captures; fundamentals matched, timbre correctly bare square wave (no choir filtering yet). `phase-2` tag applied. |
