@@ -3,6 +3,7 @@ add_library(vp330_domain STATIC
     src/tod/TopOctaveDivider.cpp
     src/tod/OctaveDivider.cpp
     src/keygate/KeyGate.cpp
+    src/keyboard/MkIIKeyboard.cpp
 )
 
 target_include_directories(vp330_domain
