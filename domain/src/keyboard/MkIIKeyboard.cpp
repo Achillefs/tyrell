@@ -69,10 +69,26 @@ void MkIIKeyboard::note_off(MidiNote note) {
   keygates_[gate_idx].gate_off();
 }
 
-void MkIIKeyboard::render(float* out, std::size_t frames) {
-  std::fill_n(out, frames, 0.0f);
-  std::vector<float> scratch(frames);
-  std::vector<float> gated(frames);
+void MkIIKeyboard::set_master_clock_hz(Hertz hz) {
+  tod_.set_master_clock_hz(hz);
+  for (int p = 0; p < 12; ++p)
+    octave_dividers_[p].set_input_frequency(tod_.pitch_class_frequency(p));
+}
+
+void MkIIKeyboard::set_attack_seconds(double s) {
+  for (auto& g : keygates_)
+    g.set_attack_seconds(s);
+}
+
+void MkIIKeyboard::set_release_seconds(double s) {
+  for (auto& g : keygates_)
+    g.set_release_seconds(s);
+}
+
+void MkIIKeyboard::render_zones(float* lower, float* upper, std::size_t frames) {
+  std::fill_n(lower, frames, 0.f);
+  std::fill_n(upper, frames, 0.f);
+  std::vector<float> scratch(frames), gated(frames);
 
   for (int i = 0; i < mkii::kKeyCount; ++i) {
     if (keygates_[i].state() == KeyGate::State::Idle) continue;
@@ -80,9 +96,18 @@ void MkIIKeyboard::render(float* out, std::size_t frames) {
     const auto t = topology_for(note);
     octave_dividers_[t->pitch_class].render(t->octave_down, scratch.data(), frames);
     keygates_[i].process(scratch.data(), gated.data(), frames);
+    const int midi = mkii::kKeyboardLowestNote.value() + i;
+    float* zone = (midi < mkii::kSplitNote.value()) ? lower : upper;
     for (std::size_t f = 0; f < frames; ++f)
-      out[f] += gated[f] * kPerKeyGain;
+      zone[f] += gated[f] * kPerKeyGain;
   }
+}
+
+void MkIIKeyboard::render(float* out, std::size_t frames) {
+  std::vector<float> lower(frames), upper(frames);
+  render_zones(lower.data(), upper.data(), frames);
+  for (std::size_t i = 0; i < frames; ++i)
+    out[i] = lower[i] + upper[i];
 }
 
 } // namespace vp330

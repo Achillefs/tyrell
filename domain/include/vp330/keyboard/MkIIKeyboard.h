@@ -23,6 +23,13 @@ public:
   // Caller duplicates to stereo. `out` is overwritten.
   void render(float* out, std::size_t frames);
 
+  // Split render: lower zone (MIDI < 60) and upper zone (MIDI >= 60).
+  void render_zones(float* lower, float* upper, std::size_t frames);
+
+  void set_master_clock_hz(Hertz hz);
+  void set_attack_seconds(double seconds);
+  void set_release_seconds(double seconds);
+
 private:
   struct KeyTopology {
     int pitch_class;
