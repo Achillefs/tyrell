@@ -56,6 +56,22 @@ TEST_CASE("OctaveDivider: per-octave phase counters are independent", "[octave-d
   }
 }
 
+TEST_CASE("OctaveDivider: set_input_frequency changes output zero-crossing rate",
+          "[octave-divider][L1]") {
+  OctaveDivider div{Hertz{2000.0}, 48000};
+  div.set_input_frequency(Hertz{4000.0});
+  std::vector<float> buf(48000);
+  div.render(/*octave_down=*/0, buf.data(), buf.size());
+
+  std::size_t crossings = 0;
+  for (std::size_t i = 1; i < buf.size(); ++i) {
+    if ((buf[i - 1] >= 0.f) != (buf[i] >= 0.f)) {
+      ++crossings;
+    }
+  }
+  REQUIRE(crossings == 8000); // 4000 Hz × 2 crossings/cycle × 1 s
+}
+
 TEST_CASE("OctaveDivider: each octave maintains continuous phase across calls", "[octave-divider]") {
   OctaveDivider div{Hertz{2000.0}, 48000};
   std::vector<float> a(1024), b(1024);

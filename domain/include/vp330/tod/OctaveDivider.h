@@ -14,6 +14,8 @@ public:
 
   OctaveDivider(Hertz input_frequency, int sample_rate);
 
+  void set_input_frequency(Hertz freq);
+
   // Append `frames` samples of (input / 2^octave_down) square output to `out`.
   // Output is ±1.0 50%-duty. State persists across calls.
   void render(int octave_down, float* out, std::size_t frames);

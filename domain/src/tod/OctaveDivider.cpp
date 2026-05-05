@@ -8,6 +8,8 @@ namespace vp330 {
 OctaveDivider::OctaveDivider(Hertz input_frequency, int sample_rate)
     : input_frequency_{input_frequency}, sample_rate_{sample_rate} {}
 
+void OctaveDivider::set_input_frequency(Hertz freq) { input_frequency_ = freq; }
+
 void OctaveDivider::render(int octave_down, float* out, std::size_t frames) {
   assert(octave_down >= 0 && octave_down <= kMaxOctavesDown);
   const double freq = input_frequency_.value() / static_cast<double>(1 << octave_down);
