@@ -15,7 +15,11 @@ TopOctaveDivider::TopOctaveDivider(Hertz master_clock,
 Hertz TopOctaveDivider::pitch_class_frequency(int pitch_class) const {
   assert(pitch_class >= 0 && pitch_class < 12);
   const double ratio = static_cast<double>(divider_ratios_[pitch_class]);
-  return Hertz{master_clock_.value() / (2.0 * ratio)};
+  // Real TOS chips (e.g. AY-3-0214) use master/N divide-by-N semantics with
+  // possibly odd N — not the master/(2N) flip-flop convention. With odd N the
+  // chip's hardware square is slightly asymmetric (e.g. 225/451 vs 226/451);
+  // our fmod model idealises to 50% duty, which is fine at audio.
+  return Hertz{master_clock_.value() / ratio};
 }
 
 void TopOctaveDivider::render_pitch_class(int pitch_class, float* out, std::size_t frames) {
