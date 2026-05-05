@@ -47,6 +47,9 @@ private:
   std::array<OctaveDivider, 12> octave_dividers_;
   // 49 KeyGates indexed by (note - kKeyboardLowestNote).
   std::vector<KeyGate> keygates_;
+  // Scratch buffers reused across render calls to avoid per-block allocation.
+  std::vector<float> scratch_8_, scratch_4_, gains_;   // per-key in render_zones()
+  std::vector<float> zone_l8_, zone_l4_, zone_u8_, zone_u4_; // owned by render()
 };
 
 } // namespace vp330
