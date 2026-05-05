@@ -80,3 +80,13 @@ TEST_CASE("TopOctaveDivider: continuous phase across render calls", "[tod]") {
   for (std::size_t i = 0; i < one_shot.size(); ++i)
     REQUIRE(one_shot[i] == two_shot[i]);
 }
+
+TEST_CASE("TopOctaveDivider: set_master_clock_hz updates pitch_class_frequency", "[tod][L1]") {
+  std::array<int, 12> ratios{};
+  ratios.fill(100);
+  TopOctaveDivider tod{Hertz{10000.0}, ratios, 48000};
+  REQUIRE(tod.pitch_class_frequency(0).value() == Catch::Approx(100.0).margin(1e-9));
+
+  tod.set_master_clock_hz(Hertz{20000.0});
+  REQUIRE(tod.pitch_class_frequency(0).value() == Catch::Approx(200.0).margin(1e-9));
+}

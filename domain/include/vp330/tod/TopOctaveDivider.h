@@ -12,6 +12,8 @@ class TopOctaveDivider {
 public:
   TopOctaveDivider(Hertz master_clock, std::array<int, 12> divider_ratios, int sample_rate);
 
+  void set_master_clock_hz(Hertz hz);
+
   Hertz pitch_class_frequency(int pitch_class) const;
 
   // Append `frames` samples of the requested pitch class's square output to

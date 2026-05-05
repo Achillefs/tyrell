@@ -12,6 +12,8 @@ TopOctaveDivider::TopOctaveDivider(Hertz master_clock,
       divider_ratios_{divider_ratios},
       sample_rate_{sample_rate} {}
 
+void TopOctaveDivider::set_master_clock_hz(Hertz hz) { master_clock_ = hz; }
+
 Hertz TopOctaveDivider::pitch_class_frequency(int pitch_class) const {
   assert(pitch_class >= 0 && pitch_class < 12);
   const double ratio = static_cast<double>(divider_ratios_[pitch_class]);
