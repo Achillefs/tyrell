@@ -1,5 +1,6 @@
 #include "vp330/keygate/KeyGate.h"
 
+#include <cassert>
 #include <cmath>
 
 namespace vp330 {
@@ -15,13 +16,17 @@ int samples_for(double seconds, int sample_rate) {
 KeyGate::KeyGate(int sample_rate, double attack_seconds, double release_seconds)
     : sample_rate_{sample_rate}, attack_samples_{samples_for(attack_seconds, sample_rate)},
       release_samples_{samples_for(release_seconds, sample_rate)} {
+  assert(attack_seconds >= 0.0 && "attack_seconds must be non-negative");
+  assert(release_seconds >= 0.0 && "release_seconds must be non-negative");
 }
 
 void KeyGate::set_attack_seconds(double seconds) {
+  assert(seconds >= 0.0 && "attack_seconds must be non-negative");
   attack_samples_ = samples_for(seconds, sample_rate_);
 }
 
 void KeyGate::set_release_seconds(double seconds) {
+  assert(seconds >= 0.0 && "release_seconds must be non-negative");
   release_samples_ = samples_for(seconds, sample_rate_);
 }
 
