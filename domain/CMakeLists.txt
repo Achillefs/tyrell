@@ -11,6 +11,7 @@ add_library(vp330_domain STATIC
     src/modulation/Vibrato.cpp
     src/ensemble/BbdLine.cpp
     src/ensemble/Ensemble.cpp
+    src/section/ChoirCompander.cpp
 )
 
 target_include_directories(vp330_domain

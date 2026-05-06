@@ -13,4 +13,5 @@ target_sources(vp330_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/modulation/VibratoCharTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ensemble/BbdLineCharTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/ensemble/EnsembleCharTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/section/ChoirCompanderCharTest.cpp
 )
