@@ -41,6 +41,13 @@ FetchContent_Declare(
 # it and manually create the rapidcheck_catch target (matching extras/catch).
 FetchContent_MakeAvailable(rapidcheck)
 
+FetchContent_Declare(
+    clap_juce_extensions
+    GIT_REPOSITORY https://github.com/free-audio/clap-juce-extensions.git
+    GIT_TAG        e8de9e8571626633b8541a54c2406fccc4272767
+)
+FetchContent_MakeAvailable(clap_juce_extensions)
+
 # Manually create rapidcheck_catch INTERFACE library.
 # Mirrors extras/catch/CMakeLists.txt (integration layer, not bundled Catch2).
 add_library(rapidcheck_catch INTERFACE)

@@ -8,6 +8,7 @@ explicit approval (spec §10).
 |---|---|---|---|---|
 | [JUCE](https://github.com/juce-framework/JUCE) | GPL-3.0 (or commercial) | tag `8.0.12` | `infrastructure/juce/` (plugin glue) | yes (same license) |
 | [Catch2](https://github.com/catchorg/Catch2) | BSL-1.0 | tag `v3.14.0` | `tests/` | yes |
+| [clap-juce-extensions](https://github.com/free-audio/clap-juce-extensions) | MIT | commit `e8de9e8` (post-0.26.0; JUCE 8 fix, no later tag) | `infrastructure/juce/` (CLAP plugin format shim) | yes |
 | [rapidcheck](https://github.com/emil-e/rapidcheck) | BSD-2-Clause | commit `b2d9ed2dddefc4b84318d664b4f221eb792d89c7` (no upstream tags) | `tests/` (property tests) | yes |
 | [libsndfile](https://github.com/libsndfile/libsndfile) | LGPL-2.1 | system package (`brew install libsndfile`, `apt install libsndfile1-dev`) | `infrastructure/cli/`, `tests/golden/helpers/wav_io` | yes |
 
