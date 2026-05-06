@@ -20,8 +20,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JUCE)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+option(VP330_ENABLE_TESTS  "Build vp330_tests and golden test suite" ON)
+option(VP330_ENABLE_RENDER "Build vp330_render CLI"                  ON)
+
+if(VP330_ENABLE_TESTS OR VP330_ENABLE_RENDER)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+endif()
 
 FetchContent_Declare(
     Catch2
@@ -62,4 +67,6 @@ include(Catch)
 
 add_subdirectory(domain)
 add_subdirectory(infrastructure)
-add_subdirectory(tests)
+if(VP330_ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()
