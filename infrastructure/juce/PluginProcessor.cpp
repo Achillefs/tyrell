@@ -18,30 +18,31 @@ VP330Processor::VP330Processor()
   p_choir_lm4_ = apvts.getRawParameterValue(vp330::params::kChoirLowerMale4);
   p_choir_um8_ = apvts.getRawParameterValue(vp330::params::kChoirUpperMale8);
   p_choir_uf4_ = apvts.getRawParameterValue(vp330::params::kChoirUpperFemale4);
-  p_ensemble_  = apvts.getRawParameterValue(vp330::params::kEnsembleEnabled);
-  p_vib_rate_  = apvts.getRawParameterValue(vp330::params::kVibratoRate);
+  p_ensemble_ = apvts.getRawParameterValue(vp330::params::kEnsembleEnabled);
+  p_vib_rate_ = apvts.getRawParameterValue(vp330::params::kVibratoRate);
   p_vib_depth_ = apvts.getRawParameterValue(vp330::params::kVibratoDepth);
-  p_attack_    = apvts.getRawParameterValue(vp330::params::kAttack);
-  p_release_   = apvts.getRawParameterValue(vp330::params::kRelease);
-  p_level_     = apvts.getRawParameterValue(vp330::params::kOutputLevel);
+  p_attack_ = apvts.getRawParameterValue(vp330::params::kAttack);
+  p_release_ = apvts.getRawParameterValue(vp330::params::kRelease);
+  p_level_ = apvts.getRawParameterValue(vp330::params::kOutputLevel);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout VP330Processor::createParameterLayout() {
-  using BoolParam  = juce::AudioParameterBool;
+  using BoolParam = juce::AudioParameterBool;
   using FloatParam = juce::AudioParameterFloat;
   using FloatRange = juce::NormalisableRange<float>;
 
   std::vector<std::unique_ptr<juce::RangedAudioParameter>> p;
-  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirLowerMale8,   "Lower Male 8'",   false));
-  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirLowerMale4,   "Lower Male 4'",   false));
-  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirUpperMale8,   "Upper Male 8'",   true));
-  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirUpperFemale4, "Upper Female 4'", false));
-  p.push_back(std::make_unique<BoolParam>(vp330::params::kEnsembleEnabled,   "Ensemble",        true));
-  p.push_back(std::make_unique<FloatParam>(vp330::params::kVibratoRate,  "Vibrato Rate",
+  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirLowerMale8, "Lower Male 8'", false));
+  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirLowerMale4, "Lower Male 4'", false));
+  p.push_back(std::make_unique<BoolParam>(vp330::params::kChoirUpperMale8, "Upper Male 8'", true));
+  p.push_back(
+      std::make_unique<BoolParam>(vp330::params::kChoirUpperFemale4, "Upper Female 4'", false));
+  p.push_back(std::make_unique<BoolParam>(vp330::params::kEnsembleEnabled, "Ensemble", true));
+  p.push_back(std::make_unique<FloatParam>(vp330::params::kVibratoRate, "Vibrato Rate",
                                            FloatRange{1.0f, 8.0f, 0.01f}, 3.0f));
   p.push_back(std::make_unique<FloatParam>(vp330::params::kVibratoDepth, "Vibrato Depth",
                                            FloatRange{0.0f, 1.0f, 0.001f}, 0.0f));
-  p.push_back(std::make_unique<FloatParam>(vp330::params::kAttack,  "Attack",
+  p.push_back(std::make_unique<FloatParam>(vp330::params::kAttack, "Attack",
                                            FloatRange{0.005f, 2.0f, 0.001f}, 0.01f));
   p.push_back(std::make_unique<FloatParam>(vp330::params::kRelease, "Release",
                                            FloatRange{0.050f, 4.0f, 0.001f}, 0.50f));
@@ -67,9 +68,9 @@ void VP330Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
   }
 
   // Sync APVTS params to engine at the start of each block
-  engine_->set_choir_switch(vp330::ChoirSwitch::LowerMale8,   *p_choir_lm8_ > 0.5f);
-  engine_->set_choir_switch(vp330::ChoirSwitch::LowerMale4,   *p_choir_lm4_ > 0.5f);
-  engine_->set_choir_switch(vp330::ChoirSwitch::UpperMale8,   *p_choir_um8_ > 0.5f);
+  engine_->set_choir_switch(vp330::ChoirSwitch::LowerMale8, *p_choir_lm8_ > 0.5f);
+  engine_->set_choir_switch(vp330::ChoirSwitch::LowerMale4, *p_choir_lm4_ > 0.5f);
+  engine_->set_choir_switch(vp330::ChoirSwitch::UpperMale8, *p_choir_um8_ > 0.5f);
   engine_->set_choir_switch(vp330::ChoirSwitch::UpperFemale4, *p_choir_uf4_ > 0.5f);
   engine_->set_ensemble_enabled(*p_ensemble_ > 0.5f);
   engine_->set_vibrato_rate(vp330::Hertz{*p_vib_rate_});
@@ -90,11 +91,11 @@ void VP330Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
         engine_->note_off(*note);
       }
     } else if (msg.isController()) {
-      const int cc    = msg.getControllerNumber();
+      const int cc = msg.getControllerNumber();
       const float val = static_cast<float>(msg.getControllerValue()) / 127.0f;
-      if (cc == 1)       // Mod wheel -> vibrato depth
+      if (cc == 1) // Mod wheel -> vibrato depth
         apvts.getParameter(vp330::params::kVibratoDepth)->setValueNotifyingHost(val);
-      else if (cc == 7)  // Volume -> output level
+      else if (cc == 7) // Volume -> output level
         apvts.getParameter(vp330::params::kOutputLevel)->setValueNotifyingHost(val);
       else if (cc == 80) // GP Button 1 -> ensemble on/off
         apvts.getParameter(vp330::params::kEnsembleEnabled)
