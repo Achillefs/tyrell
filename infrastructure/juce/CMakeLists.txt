@@ -4,7 +4,7 @@ juce_add_plugin(VP330
     BUNDLE_ID                 "org.vp330.VP330"
     PLUGIN_MANUFACTURER_CODE  Vp33
     PLUGIN_CODE               Vprc
-    FORMATS                   VST3 AU Standalone
+    FORMATS                   VST3 AU Standalone CLAP
     IS_SYNTH                  TRUE
     NEEDS_MIDI_INPUT          TRUE
     NEEDS_MIDI_OUTPUT         FALSE
@@ -14,6 +14,7 @@ juce_add_plugin(VP330
 
 target_sources(VP330 PRIVATE
     PluginProcessor.cpp
+    PluginEditor.cpp
 )
 
 target_compile_definitions(VP330 PRIVATE
@@ -26,4 +27,13 @@ target_link_libraries(VP330 PRIVATE
     vp330_domain
     juce::juce_audio_utils
     juce::juce_audio_processors
+    juce::juce_gui_basics
+    juce::juce_graphics
+    clap_juce_extensions
+)
+
+clap_juce_extensions_plugin(
+    TARGET        VP330
+    CLAP_ID       "org.vp330.vp330-mkii"
+    CLAP_FEATURES instrument synthesizer
 )
