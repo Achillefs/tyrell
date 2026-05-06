@@ -70,8 +70,7 @@ jobs:
             chmod +x "$PLUGINVAL"
             "$PLUGINVAL" \
               --strictness-level 8 \
-              --validate-in-process \
-              build/VP330_artefacts/VST3/VP330.vst3
+              build/infrastructure/juce/VP330_artefacts/VST3/VP330.vst3
           else
             curl -sSL -o pluginval.zip \
               "https://github.com/Tracktion/pluginval/releases/latest/download/pluginval_Linux.zip"
@@ -80,6 +79,5 @@ jobs:
             PLUGINVAL="./pluginval"
             xvfb-run -a "$PLUGINVAL" \
               --strictness-level 8 \
-              --validate-in-process \
-              build/VP330_artefacts/VST3/VP330.vst3
+              build/infrastructure/juce/VP330_artefacts/VST3/VP330.vst3
           fi
