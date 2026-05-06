@@ -53,8 +53,9 @@ VP330Editor::VP330Editor(VP330Processor& p, juce::AudioProcessorValueTreeState& 
     s->setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(s);
   }
-  for (auto* b : {&lm8_btn_, &lm4_btn_, &um8_btn_, &uf4_btn_, &ensemble_btn_})
+  for (auto* b : {&lm8_btn_, &lm4_btn_, &um8_btn_, &uf4_btn_, &ensemble_btn_}) {
     addAndMakeVisible(b);
+  }
 }
 
 VP330Editor::~VP330Editor() {
@@ -74,9 +75,10 @@ void VP330Editor::paint(juce::Graphics& g) {
   g.drawText("CHOIR", kW - 70, 0, 65, kHdr, juce::Justification::centredRight);
 
   g.setColour(juce::Colour(kDivider));
-  for (int x : {210, 315, 492, 652})
+  for (int x : {210, 315, 492, 652}) {
     g.drawLine(static_cast<float>(x), static_cast<float>(kHdr), static_cast<float>(x),
                static_cast<float>(kH), 1.0f);
+  }
 
   g.setColour(juce::Colour(kLabel));
   g.setFont(juce::Font(juce::FontOptions{}.withHeight(9.5f).withStyle("Bold")));
