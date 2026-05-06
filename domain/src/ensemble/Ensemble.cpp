@@ -68,7 +68,7 @@ void Ensemble::process(const float* in, float* left, float* right, std::size_t f
   // Advance phase by one block (per-block LFO update as spec'd).
   const float block_seconds = static_cast<float>(frames) / static_cast<float>(sample_rate_);
   phase_ += 2.f * std::numbers::pi_v<float> * rate_hz_ * block_seconds;
-  if (phase_ >= 2.f * std::numbers::pi_v<float>) phase_ -= 2.f * std::numbers::pi_v<float>;
+  phase_ = std::fmod(phase_, 2.f * std::numbers::pi_v<float>);
 }
 
 } // namespace vp330

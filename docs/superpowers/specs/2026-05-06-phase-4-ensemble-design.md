@@ -31,7 +31,7 @@ Alongside this, `BpCascadeParams::gain` is raised from 2.7× to 8.72× (the hard
 
 A single BBD chip modelled as a variable fractional delay with a 1-pole tracking lowpass applied both before and after the delay. The lowpass corner tracks the instantaneous BBD clock frequency:
 
-```
+```text
 clock_hz  = n_stages / delay_seconds
 fc_lowpass = 0.3 × clock_hz
 ```
@@ -72,7 +72,7 @@ Four `BbdLine` instances driven by a single quadrature phase accumulator at the 
 
 **Delay modulation:**
 
-```
+```text
 φ     = 2π × rate_hz × t   (phase accumulator, per sample)
 delay[0] = centre_short + depth × sin(φ + 0°)    → CH1
 delay[1] = centre_short + depth × sin(φ + 90°)   → CH2
@@ -82,7 +82,7 @@ delay[3] = centre_long  + depth × sin(φ + 270°)  → CH2
 
 **Stereo mix:**
 
-```
+```text
 Left  = dry × 0.5 + line0 × 0.25 + line2 × 0.25
 Right = dry × 0.5 + line1 × 0.25 + line3 × 0.25
 ```
@@ -126,7 +126,7 @@ Models the HVH105 BA662A single-sided leveler. This is not a noise-reduction com
 
 **DSP model (from `docs/filter-bank-research.md` §5, confirmed against service manual):**
 
-```
+```text
 r[n]   = |x[n]|
 env[n] = r[n] >= env[n-1] ? r[n] : α × env[n-1]
            (instantaneous attack; τ_release = 103 ms)
@@ -191,7 +191,7 @@ float gain = 8.72f;  // was 2.7f; compander now prevents clipping
 
 ## File structure
 
-```
+```text
 domain/include/vp330/ensemble/
   BbdLine.h
   Ensemble.h

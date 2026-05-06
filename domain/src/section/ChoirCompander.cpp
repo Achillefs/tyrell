@@ -15,6 +15,7 @@ void ChoirCompander::process(const float* in, float* out, std::size_t frames) {
     const double x = static_cast<double>(in[i]);
     const double r = std::fabs(x);
     envelope_ = (r >= envelope_) ? r : alpha_release_ * envelope_;
+    if (envelope_ < 1e-15) envelope_ = 0.0;
     const double g = kGMax * envelope_ / (kEnvTarget + envelope_);
     out[i] = static_cast<float>(g * x);
   }

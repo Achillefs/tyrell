@@ -76,6 +76,16 @@ TEST_CASE("SynthesisEngine: single C4 produces non-silent stereo output", "[engi
   engine.render(left.data(), right.data(), frames);
 
   REQUIRE(rms(left) > 1e-4);
+  REQUIRE(rms(right) > 1e-4);
+
+  bool any_stereo_difference = false;
+  for (std::size_t i = 0; i < frames; ++i) {
+    if (std::fabs(left[i] - right[i]) > 1e-6f) {
+      any_stereo_difference = true;
+      break;
+    }
+  }
+  REQUIRE(any_stereo_difference);
 
   float max_abs = 0.0f;
   for (std::size_t i = 0; i < frames; ++i) {
