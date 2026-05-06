@@ -1,5 +1,6 @@
 #include "vp330/keygate/KeyGate.h"
 
+#include <cassert>
 #include <cmath>
 
 namespace vp330 {
@@ -13,8 +14,21 @@ int samples_for(double seconds, int sample_rate) {
 } // namespace
 
 KeyGate::KeyGate(int sample_rate, double attack_seconds, double release_seconds)
-    : attack_samples_{samples_for(attack_seconds, sample_rate)},
-      release_samples_{samples_for(release_seconds, sample_rate)} {}
+    : sample_rate_{sample_rate}, attack_samples_{samples_for(attack_seconds, sample_rate)},
+      release_samples_{samples_for(release_seconds, sample_rate)} {
+  assert(attack_seconds >= 0.0 && "attack_seconds must be non-negative");
+  assert(release_seconds >= 0.0 && "release_seconds must be non-negative");
+}
+
+void KeyGate::set_attack_seconds(double seconds) {
+  assert(seconds >= 0.0 && "attack_seconds must be non-negative");
+  attack_samples_ = samples_for(seconds, sample_rate_);
+}
+
+void KeyGate::set_release_seconds(double seconds) {
+  assert(seconds >= 0.0 && "release_seconds must be non-negative");
+  release_samples_ = samples_for(seconds, sample_rate_);
+}
 
 void KeyGate::gate_on() {
   if (state_ == State::Idle || state_ == State::Releasing) {
@@ -59,6 +73,13 @@ void KeyGate::advance_one_sample() {
       envelope_ = 1.0 - static_cast<double>(phase_index_) / release_samples_;
     }
     break;
+  }
+}
+
+void KeyGate::fill_envelope(float* gains, std::size_t frames) {
+  for (std::size_t i = 0; i < frames; ++i) {
+    gains[i] = static_cast<float>(envelope_);
+    advance_one_sample();
   }
 }
 

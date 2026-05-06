@@ -1,6 +1,5 @@
 #include "vp330/engine/SynthesisEngine.h"
 
-#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
 #include <cmath>
@@ -57,20 +56,6 @@ TEST_CASE("SynthesisEngine: render returns silence with no notes active", "[engi
 
 namespace {
 
-// Counts sign changes in `buf` and reports the equivalent fundamental in Hz.
-// For a clean square at frequency f, this returns ~f because a square has two
-// sign changes per cycle.
-double zero_crossing_frequency(const std::vector<float>& buf, int sample_rate) {
-  std::size_t crossings = 0;
-  for (std::size_t i = 1; i < buf.size(); ++i) {
-    const bool prev_pos = buf[i - 1] >= 0.0f;
-    const bool curr_pos = buf[i] >= 0.0f;
-    if (prev_pos != curr_pos) ++crossings;
-  }
-  const double seconds = static_cast<double>(buf.size()) / sample_rate;
-  return static_cast<double>(crossings) / (2.0 * seconds);
-}
-
 double rms(const std::vector<float>& buf) {
   double acc = 0.0;
   for (auto s : buf)
@@ -80,22 +65,27 @@ double rms(const std::vector<float>& buf) {
 
 } // namespace
 
-TEST_CASE("SynthesisEngine: single C4 renders a square at ~261.63 Hz", "[engine][audio]") {
+TEST_CASE("SynthesisEngine: single C4 produces non-silent stereo-identical output",
+          "[engine][audio]") {
+  // Phase 3: output is choir-filtered (UpperMale8 on by default); a raw
+  // square-wave frequency check is no longer meaningful. Verify non-silent
+  // and non-clipping; left == right because the choir bus is mono.
   constexpr int sample_rate = 48000;
-  constexpr std::size_t frames = sample_rate; // 1.0 s of audio
+  constexpr std::size_t frames = sample_rate;
   SynthesisEngine engine{sample_rate};
   engine.note_on(vp330::kMidiC4);
 
   std::vector<float> left(frames), right(frames);
   engine.render(left.data(), right.data(), frames);
 
-  const double f = zero_crossing_frequency(left, sample_rate);
-  REQUIRE(f == Catch::Approx(261.63).margin(2.0));
+  REQUIRE(rms(left) > 1e-4);
 
-  REQUIRE(rms(left) == Catch::Approx(0.05).margin(0.005));
-
-  for (std::size_t i = 0; i < frames; ++i)
+  float max_abs = 0.0f;
+  for (std::size_t i = 0; i < frames; ++i) {
     REQUIRE(left[i] == right[i]);
+    if (std::fabs(left[i]) > max_abs) max_abs = std::fabs(left[i]);
+  }
+  REQUIRE(max_abs < 1.0f);
 }
 
 TEST_CASE("SynthesisEngine: silence after note_off", "[engine][audio]") {

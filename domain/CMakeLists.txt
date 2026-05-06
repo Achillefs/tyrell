@@ -4,6 +4,11 @@ add_library(vp330_domain STATIC
     src/tod/OctaveDivider.cpp
     src/keygate/KeyGate.cpp
     src/keyboard/MkIIKeyboard.cpp
+    src/section/BpCascade.cpp
+    src/section/ChoirFilterBank.cpp
+    src/section/ChoirSection.cpp
+    src/modulation/Lfo.cpp
+    src/modulation/Vibrato.cpp
 )
 
 target_include_directories(vp330_domain
@@ -11,3 +16,4 @@ target_include_directories(vp330_domain
 )
 
 target_compile_features(vp330_domain PUBLIC cxx_std_20)
+set_target_properties(vp330_domain PROPERTIES POSITION_INDEPENDENT_CODE ON)

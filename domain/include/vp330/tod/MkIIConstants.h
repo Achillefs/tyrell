@@ -57,6 +57,7 @@ inline constexpr std::array<int, 12> kDividerRatios{
 // 49 keys, four octaves, C2 to C6. Lowest note feeds the deepest tap of the
 // OctaveDivider chain (5 ÷2 stages below the AY-3-0214's C8 output).
 inline constexpr MidiNote kKeyboardLowestNote{36}; // C2
+inline constexpr MidiNote kSplitNote{60};          // C4 — upper zone starts at this MIDI note
 inline constexpr int kKeyCount = 49;
 
 } // namespace vp330::mkii

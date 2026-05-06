@@ -14,6 +14,8 @@ public:
 
   OctaveDivider(Hertz input_frequency, int sample_rate);
 
+  void set_input_frequency(Hertz freq);
+
   // Append `frames` samples of (input / 2^octave_down) square output to `out`.
   // Output is ±1.0 50%-duty. State persists across calls.
   void render(int octave_down, float* out, std::size_t frames);
@@ -24,6 +26,9 @@ private:
   // Per-octave sample counter; phase is derived via fmod to avoid accumulation error.
   // One independent counter per slot — interleaved render() calls must not alias.
   std::array<uint64_t, kMaxOctavesDown + 1> sample_count_{};
+  // Per-octave phase offset (cycles) accumulated across frequency changes so
+  // set_input_frequency() does not introduce a phase discontinuity.
+  std::array<double, kMaxOctavesDown + 1> phase_offsets_{};
 };
 
 } // namespace vp330

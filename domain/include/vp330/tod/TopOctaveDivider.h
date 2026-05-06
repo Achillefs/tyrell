@@ -12,6 +12,8 @@ class TopOctaveDivider {
 public:
   TopOctaveDivider(Hertz master_clock, std::array<int, 12> divider_ratios, int sample_rate);
 
+  void set_master_clock_hz(Hertz hz);
+
   Hertz pitch_class_frequency(int pitch_class) const;
 
   // Append `frames` samples of the requested pitch class's square output to
@@ -25,6 +27,9 @@ private:
   // Per-pitch-class sample counter; phase is derived via fmod to avoid
   // accumulation error.
   std::array<uint64_t, 12> sample_count_{};
+  // Per-pitch-class phase offset (cycles) accumulated across clock changes so
+  // set_master_clock_hz() does not introduce a phase discontinuity.
+  std::array<double, 12> phase_offsets_{};
 };
 
 } // namespace vp330

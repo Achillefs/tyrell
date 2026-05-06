@@ -1,4 +1,5 @@
 #include "vp330/keyboard/MkIIKeyboard.h"
+
 #include "vp330/note/MidiNote.h"
 #include "vp330/tod/MkIIConstants.h"
 
@@ -14,7 +15,8 @@ namespace {
 
 double rms(const std::vector<float>& buf) {
   double a = 0.0;
-  for (auto s : buf) a += static_cast<double>(s) * s;
+  for (auto s : buf)
+    a += static_cast<double>(s) * s;
   return std::sqrt(a / static_cast<double>(buf.size()));
 }
 
@@ -24,7 +26,8 @@ TEST_CASE("MkIIKeyboard: silent with no keys held", "[keyboard]") {
   MkIIKeyboard kb{48000};
   std::vector<float> out(1024, 0.5f);
   kb.render(out.data(), out.size());
-  for (auto s : out) REQUIRE(s == 0.0f);
+  for (auto s : out)
+    REQUIRE(s == 0.0f);
 }
 
 TEST_CASE("MkIIKeyboard: notes outside the 49-key range are ignored", "[keyboard]") {
@@ -35,7 +38,8 @@ TEST_CASE("MkIIKeyboard: notes outside the 49-key range are ignored", "[keyboard
   kb.note_on(above);
   std::vector<float> out(1024);
   kb.render(out.data(), out.size());
-  for (auto s : out) REQUIRE(s == 0.0f);
+  for (auto s : out)
+    REQUIRE(s == 0.0f);
 }
 
 TEST_CASE("MkIIKeyboard: lowest key produces audible output", "[keyboard]") {

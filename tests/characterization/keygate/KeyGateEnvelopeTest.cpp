@@ -54,7 +54,8 @@ TEST_CASE("KeyGate L2: Sustain output equals input (unity gain)", "[keygate][L2]
   auto in = dc_signal(1024, 0.7f);
   std::vector<float> out(1024);
   gate.process(in.data(), out.data(), out.size());
-  for (auto s : out) REQUIRE(s == Catch::Approx(0.7f).margin(1e-6));
+  for (auto s : out)
+    REQUIRE(s == Catch::Approx(0.7f).margin(1e-6));
 }
 
 TEST_CASE("KeyGate L2: click suppression on note-on (DC input)", "[keygate][L2]") {
