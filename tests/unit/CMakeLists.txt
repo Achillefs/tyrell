@@ -21,4 +21,5 @@ target_sources(vp330_tests PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/section/ChoirSectionTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/modulation/LfoTest.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/modulation/VibratoTest.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/ensemble/BbdLineTest.cpp
 )

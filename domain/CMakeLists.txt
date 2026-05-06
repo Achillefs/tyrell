@@ -9,6 +9,7 @@ add_library(vp330_domain STATIC
     src/section/ChoirSection.cpp
     src/modulation/Lfo.cpp
     src/modulation/Vibrato.cpp
+    src/ensemble/BbdLine.cpp
 )
 
 target_include_directories(vp330_domain
