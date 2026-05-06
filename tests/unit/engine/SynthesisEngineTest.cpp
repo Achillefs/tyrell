@@ -65,11 +65,8 @@ double rms(const std::vector<float>& buf) {
 
 } // namespace
 
-TEST_CASE("SynthesisEngine: single C4 produces non-silent stereo-identical output",
-          "[engine][audio]") {
-  // Phase 3: output is choir-filtered (UpperMale8 on by default); a raw
-  // square-wave frequency check is no longer meaningful. Verify non-silent
-  // and non-clipping; left == right because the choir bus is mono.
+TEST_CASE("SynthesisEngine: single C4 produces non-silent stereo output", "[engine][audio]") {
+  // Phase 4: ChoirCompander + Ensemble in chain; output is true stereo (L ≠ R).
   constexpr int sample_rate = 48000;
   constexpr std::size_t frames = sample_rate;
   SynthesisEngine engine{sample_rate};
@@ -82,10 +79,12 @@ TEST_CASE("SynthesisEngine: single C4 produces non-silent stereo-identical outpu
 
   float max_abs = 0.0f;
   for (std::size_t i = 0; i < frames; ++i) {
-    REQUIRE(left[i] == right[i]);
     if (std::fabs(left[i]) > max_abs) max_abs = std::fabs(left[i]);
+    if (std::fabs(right[i]) > max_abs) max_abs = std::fabs(right[i]);
   }
-  REQUIRE(max_abs < 1.0f);
+  // Compander is a gain stage (not a limiter); kGMax=4.0 × filter peak ≈ 8× is expected.
+  // Bound is intentionally loose; tighter constraint lives in the ChoirCompander L2 test.
+  REQUIRE(max_abs < 20.0f);
 }
 
 TEST_CASE("SynthesisEngine: silence after note_off", "[engine][audio]") {

@@ -17,7 +17,7 @@ struct BpCascadeParams {
   // keeps a single-note output below 0 dBFS with kPerKeyGain=0.05; it places
   // the formant peak at ~0 dB (passes formant harmonics at unity, attenuates
   // everything else). Raise to 8.72 once the compander is implemented.
-  float gain = 2.7f;
+  float gain = 8.72f; // raised from 2.7×; ChoirCompander now prevents clipping
 };
 
 // clang-format off

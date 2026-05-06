@@ -1,8 +1,10 @@
 #pragma once
 
+#include "vp330/ensemble/Ensemble.h"
 #include "vp330/keyboard/MkIIKeyboard.h"
 #include "vp330/modulation/Vibrato.h"
 #include "vp330/note/MidiNote.h"
+#include "vp330/section/ChoirCompander.h"
 #include "vp330/section/ChoirSection.h"
 #include "vp330/section/ChoirSwitch.h"
 #include "vp330/values/Hertz.h"
@@ -29,14 +31,21 @@ public:
   void set_attack_seconds(double seconds);
   void set_release_seconds(double seconds);
 
+  void set_ensemble_enabled(bool on);
+  void set_ensemble_rate(Hertz rate);
+  void set_ensemble_depth(float depth_0_to_1);
+
   void render(float* left, float* right, std::size_t frames);
 
 private:
   int sample_rate_;
   MkIIKeyboard keyboard_;
   ChoirSection choir_;
+  ChoirCompander choir_compander_;
+  Ensemble ensemble_;
   Vibrato vibrato_;
   std::vector<float> lower_8_, lower_4_, upper_8_, upper_4_;
+  std::vector<float> choir_mono_, choir_scratch_;
   // Tracks logical hold state — distinct from KeyGate's audible state, which
   // can still be Releasing after note_off.
   std::array<bool, 128> note_held_{};
