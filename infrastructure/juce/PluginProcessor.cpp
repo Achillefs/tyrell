@@ -1,5 +1,7 @@
 #include "PluginProcessor.h"
 
+#include "PluginEditor.h"
+
 #include "vp330/note/MidiNote.h"
 #include "vp330/section/ChoirSwitch.h"
 #include "vp330/values/Hertz.h"
@@ -24,6 +26,10 @@ VP330Processor::VP330Processor()
   p_attack_ = apvts.getRawParameterValue(vp330::params::kAttack);
   p_release_ = apvts.getRawParameterValue(vp330::params::kRelease);
   p_level_ = apvts.getRawParameterValue(vp330::params::kOutputLevel);
+}
+
+juce::AudioProcessorEditor* VP330Processor::createEditor() {
+  return new VP330Editor(*this, apvts);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout VP330Processor::createParameterLayout() {

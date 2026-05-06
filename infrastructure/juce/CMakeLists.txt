@@ -14,6 +14,7 @@ juce_add_plugin(VP330
 
 target_sources(VP330 PRIVATE
     PluginProcessor.cpp
+    PluginEditor.cpp
 )
 
 target_compile_definitions(VP330 PRIVATE
@@ -26,4 +27,6 @@ target_link_libraries(VP330 PRIVATE
     vp330_domain
     juce::juce_audio_utils
     juce::juce_audio_processors
+    juce::juce_gui_basics
+    juce::juce_graphics
 )
