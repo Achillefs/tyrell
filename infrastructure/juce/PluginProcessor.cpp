@@ -99,6 +99,8 @@ void VP330Processor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBu
     } else if (msg.isController()) {
       const int cc = msg.getControllerNumber();
       const float val = static_cast<float>(msg.getControllerValue()) / 127.0f;
+      // TODO: setValueNotifyingHost acquires listenerLock — not strictly RT-safe.
+      // Replace with AsyncUpdater pattern before live deployment.
       if (cc == 1) // Mod wheel -> vibrato depth
         apvts.getParameter(vp330::params::kVibratoDepth)->setValueNotifyingHost(val);
       else if (cc == 7) // Volume -> output level

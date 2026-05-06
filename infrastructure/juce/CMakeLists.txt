@@ -34,6 +34,6 @@ target_link_libraries(VP330 PRIVATE
 
 clap_juce_extensions_plugin(
     TARGET        VP330
-    CLAP_ID       "org.vp330.VP330"
+    CLAP_ID       "org.vp330.vp330-mkii"
     CLAP_FEATURES instrument synthesizer
 )
