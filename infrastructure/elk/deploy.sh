@@ -7,6 +7,8 @@
 #
 # Override defaults via environment:
 #   PI_HOST=192.168.1.42 PI_USER=root ./infrastructure/elk/deploy.sh
+#
+# Requires: bash, ssh, rsync, scp (all standard on macOS and Linux)
 set -euo pipefail
 
 PI_HOST="${PI_HOST:-elk-pi.local}"
