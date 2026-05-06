@@ -21,6 +21,4 @@ Hertz Vibrato::tick(std::size_t frames) {
   return Hertz{mkii::kMasterClockHz.value() +
                (static_cast<double>(lfo_value) * mkii::kVibratoMaxClockOffsetHz)};
 }
-}
-
 } // namespace vp330
