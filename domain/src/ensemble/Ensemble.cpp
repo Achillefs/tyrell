@@ -14,6 +14,7 @@ Ensemble::Ensemble(int sample_rate)
                                         BbdLine{sample_rate, 256, mkii::kMaxDelayShort},
                                         BbdLine{sample_rate, 512, mkii::kMaxDelayLong},
                                         BbdLine{sample_rate, 512, mkii::kMaxDelayLong}} {
+  assert(sample_rate > 0);
 }
 
 void Ensemble::set_rate(Hertz rate) {

@@ -3,11 +3,16 @@
 #include <cassert>
 #include <cmath>
 
+namespace {
+double release_alpha_for(int sample_rate) {
+  assert(sample_rate > 0);
+  return std::exp(-1.0 / (0.103 * static_cast<double>(sample_rate)));
+}
+} // namespace
+
 namespace vp330 {
 
-ChoirCompander::ChoirCompander(int sample_rate)
-    : alpha_release_{std::exp(-1.0 / (0.103 * static_cast<double>(sample_rate)))} {
-  assert(sample_rate > 0);
+ChoirCompander::ChoirCompander(int sample_rate) : alpha_release_{release_alpha_for(sample_rate)} {
 }
 
 void ChoirCompander::process(const float* in, float* out, std::size_t frames) {
