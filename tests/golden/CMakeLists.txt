@@ -12,10 +12,16 @@ target_link_libraries(vp330_tests PRIVATE
     PkgConfig::SNDFILE
 )
 
+if(VP330_ENABLE_RENDER)
+    add_dependencies(vp330_tests vp330_render)
+    target_compile_definitions(vp330_tests PRIVATE
+        VP330_RENDER_BINARY="$<TARGET_FILE:vp330_render>"
+    )
+else()
+    target_compile_definitions(vp330_tests PRIVATE VP330_RENDER_BINARY="")
+endif()
+
 target_compile_definitions(vp330_tests PRIVATE
-    VP330_RENDER_BINARY="$<TARGET_FILE:vp330_render>"
     GOLDEN_FIXTURES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/fixtures"
     GOLDEN_BASELINES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/baselines"
 )
-
-add_dependencies(vp330_tests vp330_render)
