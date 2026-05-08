@@ -49,7 +49,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout VP330Processor::createParame
   p.push_back(std::make_unique<FloatParam>(vp330::params::kVibratoDepth, "Vibrato Depth",
                                            FloatRange{0.0f, 1.0f, 0.001f}, 0.0f));
   p.push_back(std::make_unique<FloatParam>(vp330::params::kAttack, "Attack",
-                                           FloatRange{0.100f, 2.0f, 0.001f}, 0.100f));
+                                           FloatRange{0.050f, 2.0f, 0.001f}, 0.050f));
   p.push_back(std::make_unique<FloatParam>(vp330::params::kRelease, "Release",
                                            FloatRange{0.050f, 4.0f, 0.001f}, 0.50f));
   p.push_back(std::make_unique<FloatParam>(vp330::params::kOutputLevel, "Output Level",

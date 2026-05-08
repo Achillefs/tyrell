@@ -27,7 +27,7 @@ std::array<OctaveDivider, 12> make_octave_dividers(const TopOctaveDivider& tod, 
 }
 
 constexpr float kPerKeyGain = 0.05f;
-constexpr double kAttackSeconds = 0.100;
+constexpr double kAttackSeconds = 0.050;
 constexpr double kReleaseSeconds = 0.05;
 
 } // namespace

@@ -42,26 +42,28 @@ TEST_CASE("MkIIKeyboard: notes outside the 49-key range are ignored", "[keyboard
     REQUIRE(s == 0.0f);
 }
 
-TEST_CASE("MkIIKeyboard: default onset attack takes >= 100ms", "[keyboard][L1]") {
-  // kAttackSeconds must be >= 0.1s: the 0–50ms window while the envelope is
-  // still ramping should have a noticeably lower RMS than the 200–250ms window
-  // where the note is fully in sustain.
+TEST_CASE("MkIIKeyboard: default onset attack takes >= 50ms", "[keyboard][L1]") {
+  // kAttackSeconds must be ~0.05s: the 0-50ms RMS must be below sustain (attack
+  // still rising) but above 40% of sustain (attack completes within 50ms, not
+  // later). This pins both the floor (>= 50ms) and ceiling (< instant).
   const int sr = 48000;
   const int window = sr / 20; // 50ms
 
   MkIIKeyboard early{sr};
   early.note_on(vp330::mkii::kKeyboardLowestNote);
   std::vector<float> early_buf(window);
-  early.render(early_buf.data(), early_buf.size()); // 0–50ms
+  early.render(early_buf.data(), early_buf.size()); // 0-50ms
 
   MkIIKeyboard late{sr};
   late.note_on(vp330::mkii::kKeyboardLowestNote);
   std::vector<float> skip_buf(sr / 5);
   late.render(skip_buf.data(), skip_buf.size()); // skip 200ms
   std::vector<float> late_buf(window);
-  late.render(late_buf.data(), late_buf.size()); // 200–250ms (sustain)
+  late.render(late_buf.data(), late_buf.size()); // 200-250ms (sustain)
 
-  REQUIRE(rms(early_buf) < rms(late_buf) * 0.80);
+  const double r_late = rms(late_buf);
+  REQUIRE(rms(early_buf) > r_late * 0.40); // attack settles within ~50ms
+  REQUIRE(rms(early_buf) < r_late * 0.80); // attack is not instantaneous
 }
 
 TEST_CASE("MkIIKeyboard: lowest key produces audible output", "[keyboard]") {
