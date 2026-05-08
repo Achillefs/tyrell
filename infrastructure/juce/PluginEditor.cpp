@@ -53,6 +53,11 @@ VP330Editor::VP330Editor(VP330Processor& p, juce::AudioProcessorValueTreeState& 
     s->setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     addAndMakeVisible(s);
   }
+  lm8_btn_.setButtonText("LM8");
+  lm4_btn_.setButtonText("LM4");
+  um8_btn_.setButtonText("UM8");
+  uf4_btn_.setButtonText("UF4");
+  ensemble_btn_.setButtonText("ENS");
   for (auto* b : {&lm8_btn_, &lm4_btn_, &um8_btn_, &uf4_btn_, &ensemble_btn_}) {
     addAndMakeVisible(b);
   }
