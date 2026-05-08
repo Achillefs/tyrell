@@ -16,9 +16,11 @@ TEST_CASE("ChoirCompander L1: instantaneous attack — envelope reaches step in 
   std::vector<float> out(4);
   cc.process(in.data(), out.data(), 4);
 
-  // Instantaneous attack: g[1] should already reflect envelope=0.5
-  // g = kGMax * 0.5 / (kEnvTarget + 0.5) ≈ 3.33; out[1] ≈ 1.67
-  REQUIRE(out[1] > out[0]);
+  // Leveler (inverse proportion): g = kGMax * kEnvTarget / (kEnvTarget + 0.5) ≈ 0.667
+  // out[0] = 0 (input was 0), out[1] = 0.667 * 0.5 ≈ 0.333
+  const float expected_out1 = static_cast<float>(
+      vp330::kGMax * vp330::kEnvTarget / (vp330::kEnvTarget + 0.5));
+  REQUIRE(out[1] == Catch::Approx(expected_out1 * 0.5f).margin(0.01f));
   REQUIRE(out[2] == Catch::Approx(out[1]).margin(1e-5f));
 }
 
@@ -44,10 +46,11 @@ TEST_CASE("ChoirCompander L1: release τ within ±10% of 103ms", "[choir_compand
   std::vector<float> in_decay(tau_nominal, probe), out_decay(tau_nominal);
   cc.process(in_decay.data(), out_decay.data(), tau_nominal);
 
-  // Back-compute envelope from gain: env = kEnvTarget * g / (kGMax - g)
+  // Back-compute from leveler formula g = kGMax * kEnvTarget / (kEnvTarget + env):
+  //   env = kEnvTarget * (kGMax - g) / g
   const float g_max = static_cast<float>(vp330::kGMax);
   const float env_target = static_cast<float>(vp330::kEnvTarget);
-  auto env_from_g = [g_max, env_target](float g) { return env_target * g / (g_max - g); };
+  auto env_from_g = [g_max, env_target](float g) { return env_target * (g_max - g) / g; };
   const float g0 = out_decay[0] / probe;
   const float g_tau = out_decay.back() / probe;
   const float env0 = env_from_g(g0);

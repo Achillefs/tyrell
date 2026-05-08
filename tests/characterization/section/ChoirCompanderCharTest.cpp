@@ -19,11 +19,11 @@ TEST_CASE("ChoirCompander L2: output does not clip for high-amplitude input",
   float peak = 0;
   for (auto s : out)
     peak = std::max(peak, std::fabs(s));
-  // g = kGMax * env / (kEnvTarget + env) < kGMax always, so output < kGMax * input
-  REQUIRE(peak < static_cast<float>(vp330::kGMax));
+  // Leveler: g = kGMax * kEnvTarget / (kEnvTarget + env) → at env=1.0, g≈0.364, peak≈0.364
+  REQUIRE(peak <= 1.0f);
 }
 
-TEST_CASE("ChoirCompander L2: gain monotonically increases with envelope level",
+TEST_CASE("ChoirCompander L2: gain monotonically decreases with envelope level",
           "[choir_compander][L2]") {
   auto steady_gain = [](float amplitude) {
     ChoirCompander cc{48000};
@@ -36,7 +36,8 @@ TEST_CASE("ChoirCompander L2: gain monotonically increases with envelope level",
   const float g_mid = steady_gain(0.1f);
   const float g_high = steady_gain(1.0f);
 
-  REQUIRE(g_low < g_mid);
-  REQUIRE(g_mid < g_high);
+  // Leveler: louder signal → lower gain (stabilizes post-filter level)
+  REQUIRE(g_low > g_mid);
+  REQUIRE(g_mid > g_high);
   REQUIRE(g_mid == Catch::Approx(static_cast<float>(vp330::kGMax) / 2.f).margin(0.01f));
 }
