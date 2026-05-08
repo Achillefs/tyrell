@@ -14,16 +14,29 @@ Prerequisites:
 - libsndfile (`brew install libsndfile` on macOS; `apt install libsndfile1-dev` on Ubuntu).
 - For the capture tooling only: Python 3.11+.
 
-Build everything:
+### Helper scripts (`bin/`)
+
+Three convenience scripts live in `bin/`. They are the recommended way to build, test, and run the plugin locally.
+
+| Script | What it does |
+|--------|-------------|
+| `bin/build` | Configure + build via CMake (parallel, auto-detects core count). Passes extra args to `cmake -B`. |
+| `bin/test` | Run the full test suite via `ctest --output-on-failure`. Passes extra args to `ctest`. |
+| `bin/run` | Launch the Standalone app — `VP330.app` on macOS, `VP330` binary on Linux. Prefers Release, falls back to Debug. |
+
+Set `BUILD_DIR` to override the default `./build` location for all three scripts.
+
+```bash
+bin/build          # configure + build
+bin/test           # run all tests
+bin/run            # launch standalone app
+```
+
+### Raw CMake commands
 
 ```bash
 cmake -B build -S .
 cmake --build build
-```
-
-Run tests:
-
-```bash
 ctest --test-dir build --output-on-failure
 ```
 

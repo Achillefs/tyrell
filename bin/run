@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD_DIR="${BUILD_DIR:-$REPO_ROOT/build}"
+ARTEFACTS="$BUILD_DIR/infrastructure/juce/VP330_artefacts"
+
+if [[ -d "$ARTEFACTS/Release/Standalone" ]]; then
+    STANDALONE="$ARTEFACTS/Release/Standalone"
+elif [[ -d "$ARTEFACTS/Debug/Standalone" ]]; then
+    STANDALONE="$ARTEFACTS/Debug/Standalone"
+else
+    echo "Standalone artefact not found. Run bin/build first." >&2
+    exit 1
+fi
+
+case "$(uname -s)" in
+    Darwin)
+        APP="$STANDALONE/VP330.app"
+        if [[ ! -d "$APP" ]]; then
+            echo "VP330.app not found at $APP" >&2
+            exit 1
+        fi
+        open "$APP"
+        ;;
+    Linux)
+        BIN="$STANDALONE/VP330"
+        if [[ ! -x "$BIN" ]]; then
+            echo "VP330 binary not found or not executable at $BIN" >&2
+            exit 1
+        fi
+        "$BIN" "$@" &
+        disown $!
+        ;;
+    *)
+        echo "Unsupported platform: $(uname -s)" >&2
+        exit 1
+        ;;
+esac

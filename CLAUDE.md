@@ -72,4 +72,4 @@ Per spec §6 — implement these as you reach them, don't preempt:
 - `.clang-tidy` enables `bugprone-*`, `cert-*`, `cppcoreguidelines-*`, `modernize-*`, `performance-*`, `readability-*`.
 - CI: `ci.yml` (macOS-14 + ubuntu-24.04 build/test), `arm-cross.yml` (aarch64 cross-compile against Elk SDK), `lint.yml` (format check, clang-tidy on changed files, **domain-isolation grep check**).
 
-Common commands (Phase 0 ships them): `cmake -B build -S . && cmake --build build` to build; `ctest --test-dir build --output-on-failure` to run tests; `clang-format --dry-run -Werror …` and `clang-tidy -p build …` for lint; `tools/install-hooks.sh` to install the pre-commit hook.
+Common commands (Phase 0 ships them): `bin/build` to configure and build (wraps cmake; accepts extra cmake args); `bin/test` to run the test suite (wraps ctest; accepts extra ctest args); `bin/run` to launch the Standalone app on the current platform; `clang-format --dry-run -Werror …` and `clang-tidy -p build …` for lint; `tools/install-hooks.sh` to install the pre-commit hook. Set `BUILD_DIR` to override the default `./build` for all three scripts.
