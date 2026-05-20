@@ -46,16 +46,48 @@ jobs:
         if: steps.check-sdk.outputs.available == 'true'
         run: |
           curl -fSL "${{ secrets.ELK_SDK_URL }}" -o sdk.tar.gz
-          mkdir -p $HOME/elk-sdk
-          tar -xzf sdk.tar.gz -C $HOME/elk-sdk
+          mkdir -p "$HOME/elk-sdk"
+          tar -xzf sdk.tar.gz -C "$HOME/elk-sdk"
+
+      - name: Locate sysroot
+        if: steps.check-sdk.outputs.available == 'true'
+        id: sysroot
+        run: |
+          CANDIDATES=(
+            "$HOME/elk-sdk/sysroots/aarch64-elk-linux"
+            "$HOME/elk-sdk/sysroots/cortexa72-elk-linux"
+            "$HOME/elk-sdk"
+          )
+          for dir in "${CANDIDATES[@]}"; do
+            if [ -d "$dir/usr/include" ]; then
+              echo "path=$dir" >> "$GITHUB_OUTPUT"
+              echo "Found sysroot at $dir"
+              break
+            fi
+          done
+          if ! grep -q '^path=' "$GITHUB_OUTPUT"; then
+            echo "::error::Could not locate aarch64 sysroot inside the SDK tarball."
+            exit 1
+          fi
 
       - name: Configure (cross)
         if: steps.check-sdk.outputs.available == 'true'
         run: |
           cmake -B build-arm -S . \
-            -DCMAKE_TOOLCHAIN_FILE=$HOME/elk-sdk/cmake/aarch64.cmake \
-            -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_TOOLCHAIN_FILE=cmake/aarch64-elk.cmake \
+            -DELK_SYSROOT="${{ steps.sysroot.outputs.path }}" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DVP330_ENABLE_TESTS=OFF \
+            -DVP330_ENABLE_RENDER=OFF
 
       - name: Build (cross)
         if: steps.check-sdk.outputs.available == 'true'
         run: cmake --build build-arm --config Release
+
+      - name: Upload VST3 artifact
+        if: steps.check-sdk.outputs.available == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: VP330-aarch64-linux-gnu
+          path: build-arm/infrastructure/juce/VP330_artefacts/Release/VST3/
+          if-no-files-found: error

@@ -20,26 +20,45 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(JUCE)
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+option(VP330_ENABLE_TESTS  "Build vp330_tests and golden test suite" ON)
+option(VP330_ENABLE_RENDER "Build vp330_render CLI"                  ON)
 
-FetchContent_Declare(
-    Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.14.0
-    GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(Catch2)
+if(VP330_ENABLE_TESTS OR VP330_ENABLE_RENDER)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SNDFILE REQUIRED IMPORTED_TARGET sndfile)
+endif()
 
-FetchContent_Declare(
-    rapidcheck
-    GIT_REPOSITORY https://github.com/emil-e/rapidcheck.git
-    GIT_TAG b2d9ed2dddefc4b84318d664b4f221eb792d89c7
-)
-# Note: RC_ENABLE_CATCH causes rapidcheck to build its bundled Catch2 (in ext/)
-# which conflicts with our external Catch2. Instead, we build rapidcheck without
-# it and manually create the rapidcheck_catch target (matching extras/catch).
-FetchContent_MakeAvailable(rapidcheck)
+if(VP330_ENABLE_TESTS)
+    FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.14.0
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(Catch2)
+
+    FetchContent_Declare(
+        rapidcheck
+        GIT_REPOSITORY https://github.com/emil-e/rapidcheck.git
+        GIT_TAG b2d9ed2dddefc4b84318d664b4f221eb792d89c7
+    )
+    # Note: RC_ENABLE_CATCH causes rapidcheck to build its bundled Catch2 (in ext/)
+    # which conflicts with our external Catch2. Instead, we build rapidcheck without
+    # it and manually create the rapidcheck_catch target (matching extras/catch).
+    FetchContent_MakeAvailable(rapidcheck)
+
+    # Manually create rapidcheck_catch INTERFACE library.
+    # Mirrors extras/catch/CMakeLists.txt (integration layer, not bundled Catch2).
+    add_library(rapidcheck_catch INTERFACE)
+    target_link_libraries(rapidcheck_catch INTERFACE rapidcheck)
+    target_include_directories(rapidcheck_catch INTERFACE
+        $<BUILD_INTERFACE:${rapidcheck_SOURCE_DIR}/extras/catch/include>
+    )
+
+    enable_testing()
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+    include(Catch)
+endif()
 
 FetchContent_Declare(
     clap_juce_extensions
@@ -48,18 +67,8 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(clap_juce_extensions)
 
-# Manually create rapidcheck_catch INTERFACE library.
-# Mirrors extras/catch/CMakeLists.txt (integration layer, not bundled Catch2).
-add_library(rapidcheck_catch INTERFACE)
-target_link_libraries(rapidcheck_catch INTERFACE rapidcheck)
-target_include_directories(rapidcheck_catch INTERFACE
-    $<BUILD_INTERFACE:${rapidcheck_SOURCE_DIR}/extras/catch/include>
-)
-
-enable_testing()
-list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-include(Catch)
-
 add_subdirectory(domain)
 add_subdirectory(infrastructure)
-add_subdirectory(tests)
+if(VP330_ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()

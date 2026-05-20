@@ -1,0 +1,40 @@
+{
+    "host_config": {
+        "samplerate": 48000,
+        "tempo": 120.0,
+        "playing_mode": "stopped",
+        "sync_mode": "internal",
+        "time_signature": {
+            "numerator": 4,
+            "denominator": 4
+        }
+    },
+    "tracks": [
+        {
+            "name": "VP330",
+            "channels": 2,
+            "inputs": [],
+            "outputs": [
+                {
+                    "engine_bus": 0,
+                    "track_bus": 0
+                }
+            ],
+            "plugins": [
+                {
+                    "name": "vp330",
+                    "type": "vst3x",
+                    "path": "/usr/lib/lxvst/VP330.vst3"
+                }
+            ]
+        }
+    ],
+    "midi": {
+        "track_connections": [
+            {
+                "track": "VP330",
+                "channel": 0
+            }
+        ]
+    }
+}
